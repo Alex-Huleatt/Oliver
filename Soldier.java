@@ -21,7 +21,7 @@ public class Soldier {
     }
 
     public void run() throws Exception {
-        
+        emotion.act();
         rc.yield();
     }
     
