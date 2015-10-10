@@ -5,10 +5,16 @@
  */
 package Oliver.Moods;
 
+import Oliver.Soldier;
+
 /**
  *
  * @author alexhuleatt
  */
-public class Curious {
+public class Curious extends Mood {
+
+    public Curious(Soldier s) {
+        super(s);
+    }
     
 }
