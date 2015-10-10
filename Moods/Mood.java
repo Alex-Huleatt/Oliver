@@ -5,6 +5,7 @@
  */
 package Oliver.Moods;
 
+import Oliver.Soldier;
 import battlecode.common.RobotController;
 
 /**
@@ -13,7 +14,7 @@ import battlecode.common.RobotController;
  */
 public interface Mood {
     
-    public void act(RobotController rc);
-    public Mood transition(RobotController rc);
+    public void act() throws Exception;
+    public Mood transition() throws Exception;
     
 }

@@ -5,6 +5,7 @@
  */
 package Oliver.Moods;
 
+import Oliver.Soldier;
 import battlecode.common.RobotController;
 
 /**
@@ -13,11 +14,12 @@ import battlecode.common.RobotController;
  */
 public class Angry implements Mood {
 
-    public void act(RobotController rc) {
+
+    public void act() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
-    public Mood transition(RobotController rc) {
+    public Mood transition() {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
