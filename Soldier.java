@@ -2,6 +2,8 @@ package Oliver;
 
 import battlecode.common.Direction;
 import battlecode.common.GameConstants;
+import battlecode.common.GameObject;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 
@@ -40,6 +42,17 @@ public class Soldier {
     public void nextMove() {
         // TODO: bug bug buggin
     }
+    
+    public static GameObject[] getEnemies(RobotController rc) {
+        return null;
+    }
+    
+    public static MapLocation[] getBadMines(RobotController rc) {
+        return null;
+    }
+    
+    
+    
 }
 
 
