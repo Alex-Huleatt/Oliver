@@ -6,15 +6,39 @@
 package Oliver.Moods;
 
 import Oliver.Soldier;
+import battlecode.common.GameObject;
+import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 
 /**
  *
  * @author alexhuleatt
  */
-public interface Mood {
+public abstract class Mood {
     
-    public void act() throws Exception;
-    public Mood transition() throws Exception;
+    protected Soldier s;
+    protected RobotController rc;
+    
+    public Mood(Soldier s) {
+        this.s = s;
+        this.rc = s.getRC();
+    }
+    
+    public void act() throws Exception {
+        
+    }
+    
+    public Mood transition(){
+        return this;
+    }
+    
+    public RobotInfo[] getEnemies(RobotController rc) {
+        return null;
+    }
+    
+    public static MapLocation[] getBadMines(RobotController rc) {
+        return null;
+    }
     
 }

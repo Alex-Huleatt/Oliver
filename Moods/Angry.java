@@ -5,22 +5,26 @@
  */
 package Oliver.Moods;
 
+import Oliver.Const;
 import Oliver.Soldier;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 
 /**
  *
  * @author alexhuleatt
  */
-public class Angry implements Mood {
+public class Angry extends Mood {
 
-
+    public Angry(Soldier s) {
+        super(s);
+    }
+    
+    @Override
     public void act() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        RobotInfo[] enemies = getEnemies(rc);
+        Const.getClosest(rc.getLocation(), enemies);
     }
-
-    public Mood transition() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
+    
     
 }

@@ -12,16 +12,11 @@ import battlecode.common.RobotController;
  *
  * @author alexhuleatt
  */
-public class Depressed implements Mood {
+public class Depressed extends Mood {
 
-    public void act() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Depressed(Soldier s) {
+        super(s);
     }
-
-    public Mood transition() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
 
     
 }
