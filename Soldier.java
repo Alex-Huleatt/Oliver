@@ -72,17 +72,21 @@ public class Soldier {
         System.out.println("Could not bug :(");
     }
     
-    public boolean isObstacle(MapLocation loc) {
+    public boolean isObstacle(MapLocation loc) throws Exception {
         TerrainTile tt = rc.senseTerrainTile(loc);
         if (tt == TerrainTile.VOID) return true;
+        Team mine = rc.senseMine(loc);
+        if (mine != null && mine != rc.getTeam()) return true;
         if (rc.canSenseSquare(loc)) {
-            
-            if (ri != null && (rand.nextDouble() > .8 || ri.type == RobotType.HQ)) return true; //
+            Robot ri = null;
+            GameObject obj = rc.senseObjectAtLocation(loc);
+            if (obj instanceof Robot) ri = (Robot) obj;
+            if (ri != null && (rand.nextDouble() > .8 || rc.senseRobotInfo(ri).type == RobotType.HQ)) return true;
         }
         return false;
     }
     
-    public boolean isObstacle(Direction dir) {
+    public boolean isObstacle(Direction dir) throws Exception {
         return isObstacle(rc.getLocation().add(dir));
     }
     

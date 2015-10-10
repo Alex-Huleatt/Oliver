@@ -1,10 +1,6 @@
 package Oliver;
 
-import battlecode.common.GameObject;
-import battlecode.common.MapLocation;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
+import battlecode.common.*;
 
 /* Should probably comment or something */
 
