@@ -33,14 +33,13 @@ public abstract class Mood {
     public Mood(Soldier s) {
         this.s = s;
         this.rc = s.getRC();
+        this.enemyHQ = rc.senseEnemyHQLocation();
     }
     
-    public void act() throws Exception {
-        
-    }
+    public void act() throws Exception { }
     
     public Mood transition(){
-        return this;
+        return null;
     }
     
     public RobotInfo[] getEnemies(RobotController rc) {
@@ -55,7 +54,7 @@ public abstract class Mood {
         return null;
     }
     
-        public void move(Direction dir) throws Exception{
+    public void move(Direction dir) throws Exception{
         if (rc.canMove(dir)) {
             rc.move(dir);
         } else {
@@ -65,7 +64,7 @@ public abstract class Mood {
     
     public void moveTowards(MapLocation goal) throws Exception {
         MapLocation myLoc = rc.getLocation();
-        if(!isObstacle(myLoc.directionTo(enemyHQ))) {
+        if(!Const.isObstacle(rc, myLoc.directionTo(enemyHQ))) { //TODO: NOT THIS.
             move(myLoc.directionTo(enemyHQ));
             return;
         }
@@ -73,12 +72,12 @@ public abstract class Mood {
         // bugggg
         int obsOne, obsTwo;
         for (int i = 0; i < 8; i++) {
-            if (isObstacle(Const.directions[i])) {
+            if (Const.isObstacle(rc, Const.directions[i])) {
                 continue;
             }
             obsOne = (i + 1) % 8;
             obsTwo = (i + 2) % 8;
-            if (isObstacle(Const.directions[obsOne]) && (i%2 == 1 || isObstacle(Const.directions[obsTwo]))){
+            if (Const.isObstacle(rc, Const.directions[obsOne]) && (i%2 == 1 || Const.isObstacle(rc, Const.directions[obsTwo]))){
                 move(Const.directions[i]);
                 return;
             }
@@ -86,23 +85,7 @@ public abstract class Mood {
         System.out.println("Could not bug :(");
     }
     
-    public boolean isObstacle(MapLocation loc) throws Exception {
-        TerrainTile tt = rc.senseTerrainTile(loc);
-        if (tt == TerrainTile.VOID) return true;
-        Team mine = rc.senseMine(loc);
-        if (mine != null && mine != rc.getTeam()) return true;
-        if (rc.canSenseSquare(loc)) {
-            Robot ri = null;
-            GameObject obj = rc.senseObjectAtLocation(loc);
-            if (obj instanceof Robot) ri = (Robot) obj;
-            if (ri != null && (rand.nextDouble() > .8 || rc.senseRobotInfo(ri).type == RobotType.HQ)) return true;
-        }
-        return false;
-    }
-    
-    public boolean isObstacle(Direction dir) throws Exception {
-        return isObstacle(rc.getLocation().add(dir));
-    }
+
     
     
 }

@@ -3,8 +3,8 @@ package Oliver;
 import battlecode.common.*;
 
 /* Should probably comment or something */
-
 public class Const {
+
     public static int directionToInt(Direction d) {
         switch (d) {
             case NORTH:
@@ -29,9 +29,9 @@ public class Const {
     }
 
     public static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST,
-            Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH,
-            Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
-    
+        Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH,
+        Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
+
     public static RobotInfo getClosest(MapLocation loc, RobotInfo[] obs) {
         int min = loc.distanceSquaredTo(obs[0].location);
         int mindex = 0;
@@ -44,15 +44,91 @@ public class Const {
         }
         return obs[mindex];
     }
-    
+
     public static Robot[] robotFilter(GameObject[] obs) {
         Robot[] r = new Robot[obs.length];
         int r_count = 0;
         for (GameObject ob : obs) {
-            if (ob instanceof Robot) r[r_count++] = (Robot) ob;
+            if (ob instanceof Robot) {
+                r[r_count++] = (Robot) ob;
+            }
         }
         Robot[] ret = new Robot[r_count];
         System.arraycopy(r, 0, ret, 0, ret.length);
         return ret;
+    }
+
+    /**
+     * Bresenham's Line algorithm
+     *
+     * @param rc
+     * @param p1
+     * @param p2
+     * @return True if the two given locations have nothing impassable between
+     * them, false otherwise
+     * @throws GameActionException
+     */
+    public boolean scan(RobotController rc, MapLocation p1, MapLocation p2) throws Exception {
+        if (p1.isAdjacentTo(p2)) {
+            return false;
+        }
+        int x1 = p1.x;
+        int y1 = p1.y;
+        int x2 = p2.x;
+        int y2 = p2.y;
+        int dx = Math.abs(x2 - x1);
+        int dy = Math.abs(y2 - y1);
+        int sx = (x1 < x2) ? 1 : -1;
+        int sy = (y1 < y2) ? 1 : -1;
+        int err = dx - dy;
+        while (true) {
+            int e2 = err << 1;
+            if (e2 > -dy) {
+                err = err - dy;
+                x1 = x1 + sx;
+            }
+            if (x1 == x2 && y1 == y2) {
+                break;
+            }
+            if (isObstacle(rc, new MapLocation(x1, y1))) {
+                return true;
+            }
+            if (e2 < dx) {
+                err = err + dx;
+                y1 = y1 + sy;
+            }
+            if (x1 == x2 && y1 == y2) {
+                break;
+            }
+            if (isObstacle(rc, new MapLocation(x1, y1))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isObstacle(RobotController rc, MapLocation loc) throws Exception {
+        TerrainTile tt = rc.senseTerrainTile(loc);
+        if (tt == TerrainTile.VOID) {
+            return true;
+        }
+        Team mine = rc.senseMine(loc);
+        if (mine != null && mine != rc.getTeam()) {
+            return true;
+        }
+        if (rc.canSenseSquare(loc)) {
+            Robot ri = null;
+            GameObject obj = rc.senseObjectAtLocation(loc);
+            if (obj != null) {
+                return true;
+            }
+            //if (obj instanceof Robot) ri = (Robot) obj;
+            //if (ri != null ) return true; //&& (rand.nextDouble() > .8 || rc.senseRobotInfo(ri).type == RobotType.HQ)
+        }
+        return false;
+    }
+
+    public static boolean isObstacle(RobotController rc, Direction dir) throws Exception {
+        return isObstacle(rc, rc.getLocation().add(dir));
     }
 }

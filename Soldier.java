@@ -3,37 +3,28 @@ package Oliver;
 import battlecode.common.*;
 import java.util.Random;
 import Oliver.Moods.Mood;
-import Oliver.Moods.Noob;
+import Oliver.Moods.Scrub;
 
 /* Should probably comment or something */
 
 public class Soldier {
     RobotController rc;
-    int goalSlope;
-    MapLocation enemyHQ;
-    Random rand = new Random();
     Mood emotion;
-    
     public Soldier(RobotController bot) {
         rc = bot;
-        emotion = new Noob(this);
+        emotion = new Scrub(this);
     }
 
     public void run() throws Exception {
-        enemyHQ = rc.senseEnemyHQLocation();
         while (true) {
             emotion.act();
             Mood trans = emotion.transition();
-            if (trans != null) {
-                this.emotion = trans;
-            }
+            this.emotion = (trans==null)?emotion:trans;
             rc.yield();
         }
     }
     
-    public RobotController getRC() {
-        return rc;
-    }
+    public RobotController getRC() {return rc;}
     
     
     
