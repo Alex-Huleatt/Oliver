@@ -38,12 +38,11 @@ public abstract class Mood {
     
     public void act() throws Exception { }
     
-    public Mood transition(){
-        return null;
-    }
+    public Mood transition(){return null;}
     
-    public RobotInfo[] getEnemies(RobotController rc) {
-        return null;
+    public Robot[] getEnemies(RobotController rc, int disSquared) {
+        GameObject[] obs = rc.senseNearbyGameObjects(Robot.class, disSquared, rc.getTeam().opponent());
+        return Const.robotFilter(obs);
     }
     
     public static MapLocation[] getBadMines(RobotController rc) {
@@ -72,9 +71,7 @@ public abstract class Mood {
         // bugggg
         int obsOne, obsTwo;
         for (int i = 0; i < 8; i++) {
-            if (Const.isObstacle(rc, Const.directions[i])) {
-                continue;
-            }
+            if (Const.isObstacle(rc, Const.directions[i])) continue;
             obsOne = (i + 1) % 8;
             obsTwo = (i + 2) % 8;
             if (Const.isObstacle(rc, Const.directions[obsOne]) && (i%2 == 1 || Const.isObstacle(rc, Const.directions[obsTwo]))){
@@ -85,6 +82,17 @@ public abstract class Mood {
         System.out.println("Could not bug :(");
     }
     
+    public void simpleAttack() throws Exception{
+        Robot[] enemies = getEnemies(rc, RobotType.SOLDIER.attackRadiusMaxSquared);
+        if (enemies.length > 0) {
+            RobotInfo[] inf = new RobotInfo[enemies.length];
+            for (int i = 0; i < enemies.length; i++) {
+                inf[i] = rc.senseRobotInfo(enemies[i]);
+            }
+            RobotInfo closest = Const.getClosest(rc.getLocation(), inf);
+            if (rc.canAttackSquare(closest.location)) rc.attackSquare(closest.location);
+        }
+    }
 
     
     

@@ -7,8 +7,10 @@ package Oliver.Moods;
 
 import Oliver.Const;
 import Oliver.Soldier;
+import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 
 /**
  *
@@ -22,10 +24,17 @@ public class Angry extends Mood {
     
     @Override
     public void act() throws Exception {
-        RobotInfo[] enemies = getEnemies(rc);
-        RobotInfo closest = Const.getClosest(rc.getLocation(), enemies);
+        Robot[] enemies = getEnemies(rc, RobotType.SOLDIER.attackRadiusMaxSquared);
+        RobotInfo[] inf = new RobotInfo[enemies.length];
+        for (int i = 0; i < enemies.length; i++) {
+            inf[i] = rc.senseRobotInfo(enemies[i]);
+        }
+        RobotInfo closest = Const.getClosest(rc.getLocation(), inf);
         rc.attackSquare(closest.location);
     }
     
-    
+    @Override
+    public String toString() {
+        return ">:(";
+    }
 }

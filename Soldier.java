@@ -16,18 +16,13 @@ public class Soldier {
     }
 
     public void run() throws Exception {
+        Mood trans;
         while (true) {
+            rc.setIndicatorString(0, emotion.toString());
             emotion.act();
-            Mood trans = emotion.transition();
-            this.emotion = (trans==null)?emotion:trans;
+            this.emotion=((trans=emotion.transition())==null)?emotion:trans;
             rc.yield();
         }
     }
-    
     public RobotController getRC() {return rc;}
-    
-    
-    
 }
-
-

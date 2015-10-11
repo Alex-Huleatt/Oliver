@@ -17,4 +17,6 @@ public class Curious extends Mood {
         super(s);
     }
     
+    public String toString() {return ":3";}
+    
 }

@@ -64,8 +64,7 @@ public class Const {
      * @param rc
      * @param p1
      * @param p2
-     * @return True if the two given locations have nothing impassable between
-     * them, false otherwise
+     * @return 
      * @throws GameActionException
      */
     public boolean scan(RobotController rc, MapLocation p1, MapLocation p2) throws Exception {
@@ -87,22 +86,14 @@ public class Const {
                 err = err - dy;
                 x1 = x1 + sx;
             }
-            if (x1 == x2 && y1 == y2) {
-                break;
-            }
-            if (isObstacle(rc, new MapLocation(x1, y1))) {
-                return true;
-            }
+            if (x1 == x2 && y1 == y2) break;
+            if (isObstacle(rc, new MapLocation(x1, y1))) return true;
             if (e2 < dx) {
                 err = err + dx;
                 y1 = y1 + sy;
             }
-            if (x1 == x2 && y1 == y2) {
-                break;
-            }
-            if (isObstacle(rc, new MapLocation(x1, y1))) {
-                return true;
-            }
+            if (x1 == x2 && y1 == y2) break;
+            if (isObstacle(rc, new MapLocation(x1, y1)))return true;
         }
         return false;
     }

@@ -5,10 +5,11 @@
  */
 package Oliver.Moods;
 
+import Oliver.Const;
 import Oliver.Soldier;
-import battlecode.common.Direction;
-import battlecode.common.GameConstants;
-import battlecode.common.RobotController;
+import battlecode.common.Robot;
+import battlecode.common.RobotInfo;
+import battlecode.common.RobotType;
 
 /**
  *
@@ -22,9 +23,22 @@ public class Scrub extends Mood {
 
     @Override
     public void act() throws Exception {
+        Robot[] enemies = getEnemies(rc, RobotType.SOLDIER.attackRadiusMaxSquared);
+        if (enemies.length > 0) {
+            RobotInfo[] inf = new RobotInfo[enemies.length];
+            for (int i = 0; i < enemies.length; i++) {
+                inf[i] = rc.senseRobotInfo(enemies[i]);
+            }
+            RobotInfo closest = Const.getClosest(rc.getLocation(), inf);
+            if (rc.canAttackSquare(closest.location)) rc.attackSquare(closest.location);
+        }
+
         moveTowards(enemyHQ);
     }
 
-    
+    @Override
+    public String toString() {
+        return ":|";
+    }
     
 }

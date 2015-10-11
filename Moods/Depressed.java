@@ -18,5 +18,6 @@ public class Depressed extends Mood {
         super(s);
     }
 
-    
+    @Override
+    public String toString() {return ":(";}
 }
