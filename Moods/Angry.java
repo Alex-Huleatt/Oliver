@@ -21,9 +21,10 @@ public class Angry extends Mood {
     }
     
     @Override
-    public void act() {
+    public void act() throws Exception {
         RobotInfo[] enemies = getEnemies(rc);
-        Const.getClosest(rc.getLocation(), enemies);
+        RobotInfo closest = Const.getClosest(rc.getLocation(), enemies);
+        rc.attackSquare(closest.location);
     }
     
     

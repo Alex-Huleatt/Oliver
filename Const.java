@@ -5,7 +5,7 @@ import battlecode.common.*;
 /* Should probably comment or something */
 
 public class Const {
-    static int directionToInt(Direction d) {
+    public static int directionToInt(Direction d) {
         switch (d) {
             case NORTH:
                 return 0;
@@ -28,7 +28,7 @@ public class Const {
         }
     }
 
-    static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST,
+    public static Direction[] directions = {Direction.NORTH, Direction.NORTH_EAST,
             Direction.EAST, Direction.SOUTH_EAST, Direction.SOUTH,
             Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
     
