@@ -119,6 +119,25 @@ public class Const {
         return false;
     }
 
+    public static boolean locOnLine(MapLocation start, MapLocation end, MapLocation loc) {
+        if (start == null || end == null || loc == null) {
+            // YOU DONE MESSED UP A-A-RON
+            return false;
+        }
+        int x1 = start.x;
+        int y1 = start.y;
+        int x2 = end.x;
+        int y2 = end.y;
+        int x0 = loc.x;
+        int y0 = loc.y;
+
+        int xdiff = x2 -x1;
+        int ydiff = y2 - y1;
+        int n = ydiff*x0 - xdiff*y0 +x2*y1-y2*x1;
+
+        return (n*n)/(ydiff*ydiff - xdiff*xdiff) <= 2;
+    }
+
     public static boolean isObstacle(RobotController rc, Direction dir) throws Exception {
         return isObstacle(rc, rc.getLocation().add(dir));
     }

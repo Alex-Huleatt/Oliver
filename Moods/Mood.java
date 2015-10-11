@@ -26,7 +26,10 @@ public abstract class Mood {
     
     protected Soldier s;
     protected RobotController rc;
-    protected int goalSlope;
+    protected MapLocation start;
+    protected MapLocation end;
+    protected int closest;
+    protected boolean bug = false; 
     protected MapLocation enemyHQ;
     protected Random rand = new Random();
     
@@ -62,13 +65,29 @@ public abstract class Mood {
     }
     
     public void moveTowards(MapLocation goal) throws Exception {
-        MapLocation myLoc = rc.getLocation();
-        if(!Const.isObstacle(rc, myLoc.directionTo(enemyHQ))) { //TODO: NOT THIS.
-            move(myLoc.directionTo(enemyHQ));
+        if (start == null || end == null || !goal.equals(end)) {
+            // setup
+            start = rc.getLocation();
+            end = goal;
+            bug = false;
+            closest = Integer.MAX_VALUE;
+        }
+        if (rc.getLocation().distanceSquaredTo(end) < 2) {
+            // you did it! now what?
             return;
         }
-        
-        // bugggg
+        if(!bug && !Const.isObstacle(rc, start.directionTo(enemyHQ))) {
+            // we can move straight on the line
+            move(start.directionTo(enemyHQ));
+            return;
+        } else if (bug && Const.locOnLine(start, end, rc.getLocation()) && rc.getLocation().distanceSquaredTo(end) < closest) {
+            // we can stop bugging
+            bug = false;
+            moveTowards(end);
+            return;
+        }
+        closest = rc.getLocation().distanceSquaredTo(end);
+        bug = true;
         int obsOne, obsTwo;
         for (int i = 0; i < 8; i++) {
             if (Const.isObstacle(rc, Const.directions[i])) continue;
