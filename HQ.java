@@ -20,6 +20,6 @@ public class HQ {
             if (rc.canMove(dir))
                 rc.spawn(dir);
         }
-        rc.yield();
+        //while(true)rc.yield();
     }
 }

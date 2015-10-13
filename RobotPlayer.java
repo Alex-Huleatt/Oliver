@@ -11,7 +11,7 @@ import battlecode.common.RobotType;
  */
 public class RobotPlayer {
 	public static void run(RobotController rc) {
-		while (true) {
+            while(true) {
 			try {
                 switch(rc.getType()) {
                     case HQ:
@@ -28,6 +28,6 @@ public class RobotPlayer {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		}
+            }
 	}
 }

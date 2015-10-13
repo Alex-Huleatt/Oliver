@@ -100,7 +100,7 @@ public class Const {
 
     public static boolean isObstacle(RobotController rc, MapLocation loc) throws Exception {
         TerrainTile tt = rc.senseTerrainTile(loc);
-        if (tt == TerrainTile.VOID) {
+        if (tt == TerrainTile.VOID || tt == TerrainTile.OFF_MAP) {
             return true;
         }
         Team mine = rc.senseMine(loc);
@@ -110,11 +110,9 @@ public class Const {
         if (rc.canSenseSquare(loc)) {
             Robot ri = null;
             GameObject obj = rc.senseObjectAtLocation(loc);
-            if (obj != null) {
-                return true;
-            }
+            return (obj != null);
             //if (obj instanceof Robot) ri = (Robot) obj;
-            //if (ri != null ) return true; //&& (rand.nextDouble() > .8 || rc.senseRobotInfo(ri).type == RobotType.HQ)
+            //return (ri != null && (rc.senseRobotInfo(ri).type == RobotType.HQ));
         }
         return false;
     }
@@ -124,6 +122,10 @@ public class Const {
             // YOU DONE MESSED UP A-A-RON
             return false;
         }
+        return disToLine(start,end,loc) < 2;
+    }
+    
+    public static double disToLine(MapLocation start, MapLocation end, MapLocation loc) {
         int x1 = start.x;
         int y1 = start.y;
         int x2 = end.x;
@@ -131,11 +133,11 @@ public class Const {
         int x0 = loc.x;
         int y0 = loc.y;
 
-        int xdiff = x2 -x1;
-        int ydiff = y2 - y1;
+        int xdiff = x2-x1;
+        int ydiff = y2-y1;
         int n = ydiff*x0 - xdiff*y0 +x2*y1-y2*x1;
-
-        return (n*n)/(ydiff*ydiff - xdiff*xdiff) <= 2;
+        
+        return Math.abs(n)/Math.sqrt((ydiff*ydiff + xdiff*xdiff));
     }
 
     public static boolean isObstacle(RobotController rc, Direction dir) throws Exception {

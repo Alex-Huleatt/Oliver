@@ -23,96 +23,154 @@ import java.util.Random;
  * @author alexhuleatt
  */
 public abstract class Mood {
-    
+
     protected Soldier s;
     protected RobotController rc;
     protected MapLocation start;
     protected MapLocation end;
     protected int closest;
-    protected boolean bug = false; 
+    protected boolean bug = false;
     protected MapLocation enemyHQ;
     protected Random rand = new Random();
-    
+    int dir;
+    boolean onRight;
+
     public Mood(Soldier s) {
         this.s = s;
         this.rc = s.getRC();
         this.enemyHQ = rc.senseEnemyHQLocation();
+        this.onRight = false;
     }
-    
-    public void act() throws Exception { }
-    
-    public Mood transition(){return null;}
-    
+
+    public void act() throws Exception {
+    }
+
+    public Mood transition() {
+        return null;
+    }
+
     public Robot[] getEnemies(RobotController rc, int disSquared) {
         GameObject[] obs = rc.senseNearbyGameObjects(Robot.class, disSquared, rc.getTeam().opponent());
         return Const.robotFilter(obs);
     }
-    
+
     public static MapLocation[] getBadMines(RobotController rc) {
         return null;
     }
-    
+
     public static MapLocation[] getBadMines(RobotController rc, int disSquared) {
         return null;
     }
-    
-    public void move(Direction dir) throws Exception{
+
+    public void move(Direction dir) throws Exception {
         if (rc.canMove(dir)) {
             rc.move(dir);
+            this.dir = Const.directionToInt(dir);
         } else {
             System.out.println("rc failed to move in dir");
         }
     }
-    
+
+    public void move(int dir) throws Exception {
+        if (rc.canMove(Const.directions[dir])) {
+            rc.move(Const.directions[dir]);
+        } else {
+            System.out.println("rc failed to move in dir");
+        }
+    }
+
     public void moveTowards(MapLocation goal) throws Exception {
+        MapLocation me = rc.getLocation();
+        if (Const.locOnLine(start, goal, me) && me.distanceSquaredTo(end) < closest) {
+            closest = me.distanceSquaredTo(end);
+        }
         if (start == null || end == null || !goal.equals(end)) {
             // setup
             start = rc.getLocation();
             end = goal;
             bug = false;
             closest = Integer.MAX_VALUE;
+            return;
         }
-        if (rc.getLocation().distanceSquaredTo(end) < 2) {
+        if (me.distanceSquaredTo(goal) < 2) {
             // you did it! now what?
             return;
         }
-        if(!bug && !Const.isObstacle(rc, start.directionTo(enemyHQ))) {
+        if (!bug && !Const.isObstacle(rc, me.directionTo(goal)) && Const.locOnLine(start, goal, me)) {
             // we can move straight on the line
-            move(start.directionTo(enemyHQ));
+            move(me.directionTo(goal));
             return;
-        } else if (bug && Const.locOnLine(start, end, rc.getLocation()) && rc.getLocation().distanceSquaredTo(end) < closest) {
+        } else if (bug && Const.locOnLine(start, goal, me) && me.distanceSquaredTo(goal) == closest) {
             // we can stop bugging
             bug = false;
-            moveTowards(end);
+            moveTowards(goal);
             return;
         }
-        closest = rc.getLocation().distanceSquaredTo(end);
+        if (!bug) onRight = getOnRight(goal);
         bug = true;
-        int obsOne, obsTwo;
-        for (int i = 0; i < 8; i++) {
-            if (Const.isObstacle(rc, Const.directions[i])) continue;
-            obsOne = (i + 1) % 8;
-            obsTwo = (i + 2) % 8;
-            if (Const.isObstacle(rc, Const.directions[obsOne]) && (i%2 == 1 || Const.isObstacle(rc, Const.directions[obsTwo]))){
-                move(Const.directions[i]);
-                return;
+        MapLocation nextMove = trace(onRight);
+        if (nextMove != null) {
+            move(me.directionTo(nextMove));
+        } else {
+            dir = (dir+4)%8; //let us turn around
+            nextMove = trace(onRight);
+            if (nextMove != null) {
+                move(me.directionTo(nextMove));
+            } else {
+                //failure entirely. This should only happen with changing maps.
+                //We'll restart bugging from the start.
+                start = null;
+                moveTowards(goal);
             }
         }
-        System.out.println("Could not bug :(");
+
+
     }
     
-    public void simpleAttack() throws Exception{
+    public boolean getOnRight(MapLocation goal) throws Exception {
+        MapLocation me = rc.getLocation();
+        int offset = Math.min(8-dir, Math.abs((8-dir-8)));
+        int dir_to_obs = Const.directionToInt(me.directionTo(goal));
+        return ((dir_to_obs+offset) % 8) < 4;
+    }
+
+    public MapLocation trace(boolean reverse) throws Exception {
+        MapLocation me = rc.getLocation();
+        MapLocation temp;
+        int mindir = -1;
+        int mindis = Integer.MAX_VALUE;
+        int sd = (reverse) ? 1 : -1;
+        for (int i = -2; i != 3; i++) {
+            int d = (dir + i + 8) % 8;
+            if (Const.isObstacle(rc, Const.directions[d])) {
+                continue;
+            }
+            temp = me.add(Const.directions[d]);
+            int dis = temp.distanceSquaredTo(me.add(Const.directions[((dir + 2 * sd) + 8) % 8]));
+            if ((Const.isObstacle(rc, Const.directions[(d + sd + 8) % 8]) && dis < mindis)) {
+                mindir = d;
+                mindis = dis;
+            }
+        }
+        if (mindir == -1) {
+            return null;
+        } else {
+            return me.add(Const.directions[mindir]);
+        }
+    }
+
+    public void simpleAttack() throws Exception {
         Robot[] enemies = getEnemies(rc, RobotType.SOLDIER.attackRadiusMaxSquared);
         if (enemies.length > 0) {
             RobotInfo[] inf = new RobotInfo[enemies.length];
             for (int i = 0; i < enemies.length; i++) {
                 inf[i] = rc.senseRobotInfo(enemies[i]);
             }
-            RobotInfo closest = Const.getClosest(rc.getLocation(), inf);
-            if (rc.canAttackSquare(closest.location)) rc.attackSquare(closest.location);
+            RobotInfo mah_closest = Const.getClosest(rc.getLocation(), inf);
+            if (rc.canAttackSquare(mah_closest.location)) {
+                rc.attackSquare(mah_closest.location);
+            }
         }
     }
 
-    
-    
 }
