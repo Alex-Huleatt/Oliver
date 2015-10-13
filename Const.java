@@ -64,7 +64,7 @@ public class Const {
      * @param rc
      * @param p1
      * @param p2
-     * @return 
+     * @return
      * @throws GameActionException
      */
     public boolean scan(RobotController rc, MapLocation p1, MapLocation p2) throws Exception {
@@ -86,14 +86,22 @@ public class Const {
                 err = err - dy;
                 x1 = x1 + sx;
             }
-            if (x1 == x2 && y1 == y2) break;
-            if (isObstacle(rc, new MapLocation(x1, y1))) return true;
+            if (x1 == x2 && y1 == y2) {
+                break;
+            }
+            if (isObstacle(rc, new MapLocation(x1, y1))) {
+                return true;
+            }
             if (e2 < dx) {
                 err = err + dx;
                 y1 = y1 + sy;
             }
-            if (x1 == x2 && y1 == y2) break;
-            if (isObstacle(rc, new MapLocation(x1, y1)))return true;
+            if (x1 == x2 && y1 == y2) {
+                break;
+            }
+            if (isObstacle(rc, new MapLocation(x1, y1))) {
+                return true;
+            }
         }
         return false;
     }
@@ -108,11 +116,8 @@ public class Const {
             return true;
         }
         if (rc.canSenseSquare(loc)) {
-            Robot ri = null;
             GameObject obj = rc.senseObjectAtLocation(loc);
             return (obj != null);
-            //if (obj instanceof Robot) ri = (Robot) obj;
-            //return (ri != null && (rc.senseRobotInfo(ri).type == RobotType.HQ));
         }
         return false;
     }
@@ -122,9 +127,9 @@ public class Const {
             // YOU DONE MESSED UP A-A-RON
             return false;
         }
-        return disToLine(start,end,loc) < 2;
+        return disToLine(start, end, loc) < 2;
     }
-    
+
     public static double disToLine(MapLocation start, MapLocation end, MapLocation loc) {
         int x1 = start.x;
         int y1 = start.y;
@@ -132,12 +137,11 @@ public class Const {
         int y2 = end.y;
         int x0 = loc.x;
         int y0 = loc.y;
+        int xdiff = x2 - x1;
+        int ydiff = y2 - y1;
+        int n = ydiff * x0 - xdiff * y0 + x2 * y1 - y2 * x1;
 
-        int xdiff = x2-x1;
-        int ydiff = y2-y1;
-        int n = ydiff*x0 - xdiff*y0 +x2*y1-y2*x1;
-        
-        return Math.abs(n)/Math.sqrt((ydiff*ydiff + xdiff*xdiff));
+        return Math.abs(n) / Math.sqrt((ydiff * ydiff + xdiff * xdiff));
     }
 
     public static boolean isObstacle(RobotController rc, Direction dir) throws Exception {

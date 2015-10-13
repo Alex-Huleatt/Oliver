@@ -42,15 +42,15 @@ public abstract class Mood {
         this.onRight = false;
     }
 
-    public void act() throws Exception {
-    }
+    public void act() throws Exception {}
 
-    public Mood transition() {
-        return null;
-    }
+    public Mood transition() {return null;}
 
     public Robot[] getEnemies(RobotController rc, int disSquared) {
-        GameObject[] obs = rc.senseNearbyGameObjects(Robot.class, disSquared, rc.getTeam().opponent());
+        GameObject[] obs = rc.senseNearbyGameObjects(
+                Robot.class, 
+                disSquared, 
+                rc.getTeam().opponent());
         return Const.robotFilter(obs);
     }
 
@@ -79,9 +79,18 @@ public abstract class Mood {
         }
     }
 
+    /**
+     * The most godawful,  but highly functional tangent bugger.
+     * Doesn't handle every map very well.
+     * Guaranteed complete if the map doesn't change.
+     * The map does change so that guarantee means literally nothing.
+     * @param goal
+     * @throws Exception 
+     */
     public void moveTowards(MapLocation goal) throws Exception {
         MapLocation me = rc.getLocation();
-        if (Const.locOnLine(start, goal, me) && me.distanceSquaredTo(end) < closest) {
+        if (Const.locOnLine(start, goal, me) 
+                && me.distanceSquaredTo(end) < closest) {
             closest = me.distanceSquaredTo(end);
         }
         if (start == null || end == null || !goal.equals(end)) {
@@ -96,11 +105,13 @@ public abstract class Mood {
             // you did it! now what?
             return;
         }
-        if (!bug && !Const.isObstacle(rc, me.directionTo(goal)) && Const.locOnLine(start, goal, me)) {
+        if (!bug && !Const.isObstacle(rc, me.directionTo(goal)) 
+                && Const.locOnLine(start, goal, me)) {
             // we can move straight on the line
             move(me.directionTo(goal));
             return;
-        } else if (bug && Const.locOnLine(start, goal, me) && me.distanceSquaredTo(goal) == closest) {
+        } else if (bug && Const.locOnLine(start, goal, me) 
+                && me.distanceSquaredTo(goal) == closest) {
             // we can stop bugging
             bug = false;
             moveTowards(goal);
@@ -123,8 +134,6 @@ public abstract class Mood {
                 moveTowards(goal);
             }
         }
-
-
     }
     
     public boolean getOnRight(MapLocation goal) throws Exception {
@@ -146,21 +155,21 @@ public abstract class Mood {
                 continue;
             }
             temp = me.add(Const.directions[d]);
-            int dis = temp.distanceSquaredTo(me.add(Const.directions[((dir + 2 * sd) + 8) % 8]));
-            if ((Const.isObstacle(rc, Const.directions[(d + sd + 8) % 8]) && dis < mindis)) {
+            int dis = temp.distanceSquaredTo(
+                    me.add(Const.directions[((dir + 2 * sd) + 8) % 8]));
+            if ((Const.isObstacle(rc, 
+                    Const.directions[(d + sd + 8) % 8]) && dis < mindis)) {
                 mindir = d;
                 mindis = dis;
             }
         }
-        if (mindir == -1) {
-            return null;
-        } else {
-            return me.add(Const.directions[mindir]);
-        }
+        if (mindir == -1) return null;
+        else return me.add(Const.directions[mindir]);
     }
 
     public void simpleAttack() throws Exception {
-        Robot[] enemies = getEnemies(rc, RobotType.SOLDIER.attackRadiusMaxSquared);
+        Robot[] enemies = getEnemies(rc, 
+                RobotType.SOLDIER.attackRadiusMaxSquared);
         if (enemies.length > 0) {
             RobotInfo[] inf = new RobotInfo[enemies.length];
             for (int i = 0; i < enemies.length; i++) {
@@ -172,5 +181,4 @@ public abstract class Mood {
             }
         }
     }
-
 }
