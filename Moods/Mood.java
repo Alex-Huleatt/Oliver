@@ -34,6 +34,7 @@ public abstract class Mood {
     protected Random rand = new Random();
     int dir;
     boolean onRight;
+    int pathAllowance = 10;
 
     public Mood(Soldier s) {
         this.s = s;
@@ -110,12 +111,28 @@ public abstract class Mood {
             // we can move straight on the line
             move(me.directionTo(goal));
             return;
-        } else if (bug && Const.locOnLine(start, goal, me) 
-                && me.distanceSquaredTo(goal) == closest) {
-            // we can stop bugging
-            bug = false;
-            moveTowards(goal);
-            return;
+        } else if (bug) {
+            if (Const.locOnLine(start, goal, me)
+                    && me.distanceSquaredTo(goal) == closest) {
+                // we can stop bugging
+                bug = false;
+                moveTowards(goal);
+                return;
+            }
+            // if we are too far away from the path, start mining
+            MapLocation mid = Const.midpoint(start, goal);
+            if (me.distanceSquaredTo(mid) > pathAllowance) {
+                rc.setIndicatorString(1, "Too far off path!");
+                MapLocation mineLoc = me.add(me.directionTo(goal)); // TODO: we need to move somewhere between line and goal
+                Team mine = rc.senseMine(mineLoc);
+                if(mine != null && mine != rc.getTeam()) {
+                    rc.defuseMine(mineLoc);
+                    return;
+                } else if (!Const.isObstacle(rc, mineLoc)) {
+                    move(me.directionTo(goal));
+                    return;
+                }
+            }
         }
         if (!bug) onRight = getOnRight(goal);
         bug = true;
