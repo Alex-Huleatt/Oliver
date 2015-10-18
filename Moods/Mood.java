@@ -308,14 +308,14 @@ public abstract class Mood {
             rc.move(d);
             return;
         }
-        int dir = Const.directionToInt(d);
+        int local_dir = Const.directionToInt(d);
         for (int i = 1; i < 3; i++) {
-            Direction left = Const.directions[((dir - i) + 8) % 8];
+            Direction left = Const.directions[((local_dir - i) + 8) % 8];
             if (rc.canMove(left) && !Const.isObstacle(rc, left)) {
                 rc.move(left);
                 return;
             }
-            Direction right = Const.directions[(dir + i) % 8];
+            Direction right = Const.directions[(local_dir + i) % 8];
             if (rc.canMove(right) && !Const.isObstacle(rc, d)) {
                 rc.move(right);
                 return;
