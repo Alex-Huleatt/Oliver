@@ -299,27 +299,29 @@ public abstract class Mood {
         }
     }
 
-    public void moveish(Direction d) throws Exception {
+    public boolean moveish(Direction d) throws Exception {
         if (!rc.isActive()) {
             System.out.println("rc wasn't active in moveish");
-            return;
+            return false;
         }
         if (rc.canMove(d) && !Const.isObstacle(rc, d)) {
             rc.move(d);
-            return;
+            return false;
         }
         int local_dir = Const.directionToInt(d);
         for (int i = 1; i < 3; i++) {
             Direction left = Const.directions[((local_dir - i) + 8) % 8];
             if (rc.canMove(left) && !Const.isObstacle(rc, left)) {
                 rc.move(left);
-                return;
+                return false;
             }
             Direction right = Const.directions[(local_dir + i) % 8];
             if (rc.canMove(right) && !Const.isObstacle(rc, d)) {
                 rc.move(right);
-                return;
+                return false;
             }
         }
+
+        return true;
     }
 }

@@ -9,6 +9,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
+import battlecode.common.Team;
 
 
 public class Aggro extends Mood {
@@ -55,15 +56,39 @@ public class Aggro extends Mood {
             System.out.println("Aggro couldn't find closest bot!");
         }
         MapLocation closest = bot.location;
+        Direction dir = rc.getLocation().directionTo(closest);
         int dist = rc.getLocation().distanceSquaredTo(closest);
-        if (enemies.length < allies.length) {
+        if (Const.getThreat(rc, enemies) < Const.getThreat(rc, allies) + 1) {
             if (dist > 15) moveTowards(closest);
-            else moveish(rc.getLocation().directionTo(closest));
+            else moveish(dir);
+            if (rc.isActive()) {
+                mine(dir);
+            }
+            return;
         } else if (dist < 10) {
-            moveish(rc.getLocation().directionTo(closest).opposite());
+            moveish(dir.opposite());
         }
     }
-
+    
+    private void mine(Direction d) throws Exception {
+        int dir = Const.directionToInt(d);
+        MapLocation me = rc.getLocation();
+        
+        MapLocation mine;
+        Team mTeam;
+        for (int i = 0; i < 1; i++) {
+            mine = me.add(Const.directions[((dir + i) + 8) % 8]);
+            mTeam = rc.senseMine(mine);
+            if (mTeam == Team.NEUTRAL) {
+                rc.defuseMine(mine);
+                return;
+            } else if (mTeam == rc.getTeam().opponent()) {
+                // TODO: check if mine location is safe
+            }
+        }
+        
+        
+    }
 
     @Override
     public String toString() {
