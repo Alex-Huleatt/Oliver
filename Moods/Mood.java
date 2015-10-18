@@ -24,18 +24,21 @@ import java.util.Random;
  */
 public abstract class Mood {
 
-    protected Soldier s;
-    protected RobotController rc;
-    protected MapLocation start;
-    protected MapLocation end;
-    protected int closest;
-    protected boolean bug = false;
-    protected boolean mining = false;
-    protected MapLocation enemyHQ;
-    protected Random rand = new Random();
-    protected int dir;
-    protected boolean onRight;
-    protected int pathAllowance = 4;
+    public Soldier s;
+    public RobotController rc;
+    public MapLocation enemyHQ;
+    public Robot[] enemies;
+    public Robot[] allies;
+    
+     MapLocation start;
+     MapLocation end;
+     int closest;
+     boolean bug = false;
+     boolean mining = false;
+     Random rand = new Random();
+     int dir;
+     boolean onRight;
+     int pathAllowance = 4;
 
     public Mood(Soldier s) {
         this.s = s;
@@ -50,18 +53,26 @@ public abstract class Mood {
     public Mood swing() {
         return null;
     }
+    
+    public void getNearbyRobots(int disSquared) {
+        Robot[] robots = rc.senseNearbyGameObjects(
+                Robot.class,
+                disSquared);
+        enemies = Const.robotFilter(robots, rc.getTeam().opponent());
+        allies = Const.robotFilter(robots, rc.getTeam());
+    }
 
 
 
-    protected static MapLocation[] getBadMines(RobotController rc) {
+     public static MapLocation[] getBadMines(RobotController rc) {
         return null;
     }
 
-    protected static MapLocation[] getBadMines(RobotController rc, int disSquared) {
+     public static MapLocation[] getBadMines(RobotController rc, int disSquared) {
         return null;
     }
 
-    protected void move(Direction dir) throws Exception {
+    public void move(Direction dir) throws Exception {
         if (rc.isActive() && rc.canMove(dir)) {
             rc.move(dir);
             this.dir = Const.directionToInt(dir);
@@ -70,7 +81,7 @@ public abstract class Mood {
         }
     }
 
-    protected void move(int dir) throws Exception {
+     public void move(int dir) throws Exception {
         if (rc.isActive() && rc.canMove(Const.directions[dir])) {
             rc.move(Const.directions[dir]);
             this.dir = dir;
@@ -87,7 +98,7 @@ public abstract class Mood {
      * @param goal
      * @throws Exception
      */
-    protected void moveTowards(MapLocation goal) throws Exception {
+     public void moveTowards(MapLocation goal) throws Exception {
         MapLocation me = rc.getLocation();
         if (Const.locOnLine(start, goal, me)
                 && me.distanceSquaredTo(end) < closest) {
@@ -100,7 +111,7 @@ public abstract class Mood {
             bug = false;
             mining = false;
             closest = Integer.MAX_VALUE;
-            return;
+            // return;
         }
         if (me.distanceSquaredTo(goal) < 2) {
             // you did it! now what?

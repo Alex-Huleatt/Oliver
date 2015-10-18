@@ -2,8 +2,8 @@ package Oliver;
 
 import battlecode.common.*;
 import java.util.Random;
-import Oliver.Moods.Mood;
-import Oliver.Moods.Scrub;
+import Oliver.Moods.*;
+import Oliver.Moods.Zerg.*;
 
 /* Should probably comment or something */
 
@@ -12,15 +12,15 @@ public class Soldier {
     Mood emotion;
     public Soldier(RobotController bot) {
         rc = bot;
-        emotion = new Scrub(this);
+        emotion = new Rushing(this);
     }
 
     public void run() throws Exception {
         Mood trans;
         while (true) {
+            this.emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.setIndicatorString(0, emotion.toString());
             emotion.act();
-            this.emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.yield();
         }
     }

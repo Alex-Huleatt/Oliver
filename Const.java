@@ -44,6 +44,15 @@ public class Const {
         }
         return obs[mindex];
     }
+    
+    public static RobotInfo getClosest(MapLocation loc, Robot[] bots, RobotController rc) throws Exception{
+        if (bots.length == 0) return null;
+        RobotInfo[] info = new RobotInfo[bots.length];
+        for (int i = 0; i < bots.length; i++) {
+            info[i] = rc.senseRobotInfo(bots[i]);
+        }
+        return getClosest(loc, info);
+    }
 
     public static Robot[] robotFilter(GameObject[] obs) {
         Robot[] r = new Robot[obs.length];
@@ -56,6 +65,20 @@ public class Const {
         Robot[] ret = new Robot[r_count];
         System.arraycopy(r, 0, ret, 0, ret.length);
         return ret;
+    }
+    
+    public static Robot[] robotFilter(GameObject[] obs, Team team) {
+        Robot[] r = new Robot[obs.length];
+        int count = 0;
+        
+        for (GameObject ob : obs) {
+            if (ob instanceof Robot && ob.getTeam() == team) {
+                r[count++] = (Robot) ob;
+            }
+        }
+        Robot[] robs = new Robot[count];
+        System.arraycopy(r, 0, robs, 0, robs.length);
+        return robs;
     }
 
     public static Robot[] getEnemies(RobotController rc, int disSquared) {
