@@ -33,6 +33,9 @@ public class Const {
         Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 
     public static RobotInfo getClosest(MapLocation loc, RobotInfo[] obs) {
+        if (obs.length ==0 ) {
+            return null;
+        }
         int min = loc.distanceSquaredTo(obs[0].location);
         int mindex = 0;
         for (int i = 1; i < obs.length; i++) {

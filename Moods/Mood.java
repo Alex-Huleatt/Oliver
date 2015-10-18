@@ -39,7 +39,7 @@ public abstract class Mood {
     boolean mining = false;
     int dir;
     boolean onRight;
-    int pathAllowance = 6;
+    int pathAllowance = 3;
 
     public Mood(Soldier s) {
         this.s = s;
@@ -53,7 +53,7 @@ public abstract class Mood {
     }
 
     public Mood swing() throws Exception {
-        if (rc.readBroadcast(0) == 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 30) {
+        if (rc.readBroadcast(0) == 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 100) {
             return new Spooked(s);
         } else {
             return null;
