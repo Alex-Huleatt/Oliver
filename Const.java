@@ -46,12 +46,29 @@ public class Const {
     }
     
     public static RobotInfo getClosest(MapLocation loc, Robot[] bots, RobotController rc) throws Exception{
-        if (bots.length == 0) return null;
+        
+        return getClosest(loc, getInfos(rc, bots));
+    }
+    
+    public static RobotInfo[] getInfos(RobotController rc, Robot[] bots) throws Exception{
+        if (bots.length == 0) return new RobotInfo[0];
         RobotInfo[] info = new RobotInfo[bots.length];
         for (int i = 0; i < bots.length; i++) {
             info[i] = rc.senseRobotInfo(bots[i]);
         }
-        return getClosest(loc, info);
+        return info;
+    }
+    
+    public static int getThreat(RobotController rc, Robot[] bots) throws Exception{
+        RobotInfo[] infos = getInfos(rc, bots);
+        int total = 0;
+        for (RobotInfo info : infos) {
+            switch(info.type){
+                case SOLDIER: total++; break;
+                case ARTILLERY: total+=4; break;
+            }
+        }
+        return total;
     }
 
     public static Robot[] robotFilter(GameObject[] obs) {
