@@ -189,5 +189,6 @@ public class Const {
         // TODO: finish getting the appropriate mining angle when off course
         return Direction.NORTH;
     }
+   
 
 }
