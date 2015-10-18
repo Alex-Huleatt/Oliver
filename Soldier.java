@@ -20,7 +20,7 @@ public class Soldier {
         while (true) {
             rc.setIndicatorString(0, emotion.toString());
             emotion.act();
-            this.emotion=((trans=emotion.transition())==null)?emotion:trans;
+            this.emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.yield();
         }
     }

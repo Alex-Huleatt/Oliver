@@ -58,6 +58,14 @@ public class Const {
         return ret;
     }
 
+    public static Robot[] getEnemies(RobotController rc, int disSquared) {
+        GameObject[] obs = rc.senseNearbyGameObjects(
+                Robot.class,
+                disSquared,
+                rc.getTeam().opponent());
+        return Const.robotFilter(obs);
+    }
+
     /**
      * Bresenham's Line algorithm
      *
@@ -147,17 +155,16 @@ public class Const {
     public static boolean isObstacle(RobotController rc, Direction dir) throws Exception {
         return isObstacle(rc, rc.getLocation().add(dir));
     }
-    
+
     public static MapLocation midpoint(MapLocation start, MapLocation end) {
-        return new MapLocation((start.x+end.x)/2, (start.y+end.y)/2);
+        return new MapLocation((start.x + end.x) / 2, (start.y + end.y) / 2);
     }
-    
+
     // Alex's idea for name
     public static Direction seven(MapLocation start, MapLocation end, MapLocation me) {
-        MapLocation midpoint = new MapLocation((me.x + (start.y - end.y)), (me.y + (start.x -end.y)));
+        MapLocation midpoint = new MapLocation((me.x + (start.y - end.y)), (me.y + (start.x - end.y)));
         // TODO: finish getting the appropriate mining angle when off course
         return Direction.NORTH;
     }
-    
 
 }

@@ -47,17 +47,11 @@ public abstract class Mood {
     public void act() throws Exception {
     }
 
-    public Mood transition() {
+    public Mood swing() {
         return null;
     }
 
-    protected Robot[] getEnemies(RobotController rc, int disSquared) {
-        GameObject[] obs = rc.senseNearbyGameObjects(
-                Robot.class,
-                disSquared,
-                rc.getTeam().opponent());
-        return Const.robotFilter(obs);
-    }
+
 
     protected static MapLocation[] getBadMines(RobotController rc) {
         return null;
@@ -245,11 +239,6 @@ public abstract class Mood {
         return ((dir_to_obs + offset) % 8) < 4;
     }
 
-    private boolean isOnRight(int dir1, int dir2) {
-        int offset = Math.min(8 - dir1, Math.abs((8 - dir1 - 8)));
-        return ((dir2 + offset) % 8) < 4;
-    }
-
     private MapLocation trace(boolean reverse) throws Exception {
         MapLocation me = rc.getLocation();
         MapLocation temp;
@@ -277,18 +266,5 @@ public abstract class Mood {
         }
     }
 
-    protected void simpleAttack() throws Exception {
-        Robot[] enemies = getEnemies(rc,
-                RobotType.SOLDIER.attackRadiusMaxSquared);
-        if (enemies.length > 0) {
-            RobotInfo[] inf = new RobotInfo[enemies.length];
-            for (int i = 0; i < enemies.length; i++) {
-                inf[i] = rc.senseRobotInfo(enemies[i]);
-            }
-            RobotInfo mah_closest = Const.getClosest(rc.getLocation(), inf);
-            if (rc.canAttackSquare(mah_closest.location)) {
-                rc.attackSquare(mah_closest.location);
-            }
-        }
-    }
+
 }
