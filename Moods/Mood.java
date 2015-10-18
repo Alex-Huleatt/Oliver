@@ -29,6 +29,7 @@ public abstract class Mood {
     public MapLocation enemyHQ;
     public Robot[] enemies;
     public Robot[] allies;
+    public Team team;
     
      MapLocation start;
      MapLocation end;
@@ -38,12 +39,14 @@ public abstract class Mood {
      Random rand = new Random();
      int dir;
      boolean onRight;
-     int pathAllowance = 4;
+     int pathAllowance = 6;
+     
 
     public Mood(Soldier s) {
         this.s = s;
         this.rc = s.getRC();
         this.enemyHQ = rc.senseEnemyHQLocation();
+        this.team = rc.getTeam();
         this.onRight = false;
     }
 
