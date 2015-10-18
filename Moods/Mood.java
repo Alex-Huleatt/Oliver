@@ -121,7 +121,7 @@ public abstract class Mood {
             return;
         }
 
-        if (mining || Const.disToLine(start, goal, me) > pathAllowance) {
+        if (mining || me.distanceSquaredTo(goal) > pathAllowance + closest) {
             rc.setIndicatorString(1, "Too far off path!");
             mining = true;
             if (Const.locOnLine(start, end, me) && me.distanceSquaredTo(goal) < closest) {
@@ -160,10 +160,25 @@ public abstract class Mood {
                 return;
             }
         }
-        if (!bug) {
+        if (!bug) { //the initial transition. 2Spooky4me.
+            //the initial move is important.
+            MapLocation t_clos = null;
+            int minDis = Integer.MAX_VALUE;
+            for (int i = 0; i <= 7; i++) {
+                MapLocation t = me.add(Const.directions[(dir + i + 8) % 8]);
+                int t_dis = t.distanceSquaredTo(goal);
+                if (!Const.isObstacle(rc, t) && t_dis < minDis) {
+                    t_clos = t;
+                    minDis = t_dis;
+                }
+            }
+            if (t_clos == null) return;
+            move(me.directionTo(t_clos));
             onRight = getOnRight(goal);
+            bug = true;
+            rc.setIndicatorString(0, "initial transition");
+            return;
         }
-        bug = true;
         MapLocation nextMove = trace(onRight);
         if (nextMove != null) {
             move(me.directionTo(nextMove));
