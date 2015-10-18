@@ -25,7 +25,7 @@ public class Aggro extends Mood {
     }
 
     @Override
-    public Mood transition() {
+    public Mood swing() {
         // - If unit has low health and few allies, transition to Zerg.Hurt
         // - If there are no sensable unit around, transition to Zerg.Rushing
         // - Else return Aggro

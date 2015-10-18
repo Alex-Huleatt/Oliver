@@ -23,15 +23,7 @@ public class Angry extends Mood {
     }
     
     @Override
-    public void act() throws Exception {
-        Robot[] enemies = getEnemies(rc, RobotType.SOLDIER.attackRadiusMaxSquared);
-        RobotInfo[] inf = new RobotInfo[enemies.length];
-        for (int i = 0; i < enemies.length; i++) {
-            inf[i] = rc.senseRobotInfo(enemies[i]);
-        }
-        RobotInfo closest = Const.getClosest(rc.getLocation(), inf);
-        rc.attackSquare(closest.location);
-    }
+    public void act() throws Exception { }
     
     @Override
     public String toString() {

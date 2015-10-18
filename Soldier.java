@@ -18,7 +18,7 @@ public class Soldier {
     public void run() throws Exception {
         Mood trans;
         while (true) {
-            this.emotion=((trans=emotion.transition())==null)?emotion:trans;
+            this.emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.setIndicatorString(0, emotion.toString());
             emotion.act();
             rc.yield();
