@@ -15,7 +15,11 @@ public class Rushing extends Mood {
     }
 
     @Override
-    public Mood swing() {
+    public Mood swing() throws Exception {
+        Mood sp = super.swing();
+        if (sp != null) {
+            return sp;
+        }
         // TODO: transition states:
         // - If an enemy unit is sensed within range X, Zerg.Aggro
         getNearbyRobots(25);

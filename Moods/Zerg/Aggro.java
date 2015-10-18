@@ -26,7 +26,9 @@ public class Aggro extends Mood {
     }
 
     @Override
-    public Mood swing() {
+    public Mood swing() throws Exception {
+        Mood sp = super.swing();
+        if (sp != null) return sp;
         // - If unit has low health and few allies, transition to Zerg.Hurt
         // - If there are no sensable unit around, transition to Zerg.Rushing
         // - Else return Aggro
@@ -66,31 +68,6 @@ public class Aggro extends Mood {
         } else if (dist < 10) {
             moveish(dir.opposite());
         }
-    }
-    private boolean moveish(Direction d) throws Exception{
-        if (!rc.isActive()) {
-            System.out.println("rc wasn't active in moveish");
-            return false;
-        }
-        if (rc.canMove(d) && !Const.isObstacle(rc, d)) {
-            rc.move(d);
-            return false;
-        }
-        int dir = Const.directionToInt(d);
-        for (int i = 1; i < 3; i++) {
-            Direction left = Const.directions[((dir - i) + 8) % 8];
-            if (rc.canMove(left) && !Const.isObstacle(rc, left)) {
-                rc.move(left);
-                return false;
-            }
-            Direction right = Const.directions[(dir + i) % 8];
-            if (rc.canMove(right) && !Const.isObstacle(rc, d)){
-                rc.move(right);
-                return false;
-            }
-        }
-        
-        return true;
     }
     
     private void mine(Direction d) throws Exception {

@@ -6,6 +6,7 @@
 package Oliver.Moods;
 
 import Oliver.Const;
+import Oliver.Moods.Defense.Spooked;
 import Oliver.Soldier;
 import battlecode.common.Direction;
 import battlecode.common.GameObject;
@@ -30,17 +31,15 @@ public abstract class Mood {
     public Robot[] enemies;
     public Robot[] allies;
     public Team team;
-    
-     MapLocation start;
-     MapLocation end;
-     int closest;
-     boolean bug = false;
-     boolean mining = false;
-     Random rand = new Random();
-     int dir;
-     boolean onRight;
-     int pathAllowance = 6;
-     
+
+    MapLocation start;
+    MapLocation end;
+    int closest;
+    boolean bug = false;
+    boolean mining = false;
+    int dir;
+    boolean onRight;
+    int pathAllowance = 6;
 
     public Mood(Soldier s) {
         this.s = s;
@@ -53,10 +52,14 @@ public abstract class Mood {
     public void act() throws Exception {
     }
 
-    public Mood swing() {
-        return null;
+    public Mood swing() throws Exception {
+        if (rc.readBroadcast(0) == 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 30) {
+            return new Spooked(s);
+        } else {
+            return null;
+        }
     }
-    
+
     public void getNearbyRobots(int disSquared) {
         Robot[] robots = rc.senseNearbyGameObjects(
                 Robot.class,
@@ -65,13 +68,11 @@ public abstract class Mood {
         allies = Const.robotFilter(robots, rc.getTeam());
     }
 
-
-
-     public static MapLocation[] getBadMines(RobotController rc) {
+    public static MapLocation[] getBadMines(RobotController rc) {
         return null;
     }
 
-     public static MapLocation[] getBadMines(RobotController rc, int disSquared) {
+    public static MapLocation[] getBadMines(RobotController rc, int disSquared) {
         return null;
     }
 
@@ -84,7 +85,7 @@ public abstract class Mood {
         }
     }
 
-     public void move(int dir) throws Exception {
+    public void move(int dir) throws Exception {
         if (rc.isActive() && rc.canMove(Const.directions[dir])) {
             rc.move(Const.directions[dir]);
             this.dir = dir;
@@ -101,12 +102,8 @@ public abstract class Mood {
      * @param goal
      * @throws Exception
      */
-     public void moveTowards(MapLocation goal) throws Exception {
+    public void moveTowards(MapLocation goal) throws Exception {
         MapLocation me = rc.getLocation();
-        if (Const.locOnLine(start, goal, me)
-                && me.distanceSquaredTo(end) < closest) {
-            closest = me.distanceSquaredTo(end);
-        }
         if (start == null || end == null || !goal.equals(end)) {
             // setup
             start = rc.getLocation();
@@ -116,6 +113,7 @@ public abstract class Mood {
             closest = Integer.MAX_VALUE;
             // return;
         }
+
         if (me.distanceSquaredTo(goal) < 2) {
             // you did it! now what?
             return;
@@ -127,12 +125,16 @@ public abstract class Mood {
             return;
         }
         if (bug && Const.locOnLine(start, goal, me)
-                && me.distanceSquaredTo(goal) == closest) {
+                && me.distanceSquaredTo(goal) < closest) {
             // we can stop bugging.
             bug = false;
             dir = Const.directionToInt(me.directionTo(goal));
             moveTowards(goal);
             return;
+        }
+
+        if (me.distanceSquaredTo(end) < closest) {
+            closest = me.distanceSquaredTo(end);
         }
 
         if (mining || me.distanceSquaredTo(goal) > pathAllowance + closest) {
@@ -186,7 +188,9 @@ public abstract class Mood {
                     minDis = t_dis;
                 }
             }
-            if (t_clos == null) return;
+            if (t_clos == null) {
+                return;
+            }
             move(me.directionTo(t_clos));
             onRight = getOnRight(goal);
             bug = true;
@@ -295,5 +299,29 @@ public abstract class Mood {
         }
     }
 
+    public boolean moveish(Direction d) throws Exception {
+        if (!rc.isActive()) {
+            System.out.println("rc wasn't active in moveish");
+            return false;
+        }
+        if (rc.canMove(d) && !Const.isObstacle(rc, d)) {
+            rc.move(d);
+            return false;
+        }
+        int dir = Const.directionToInt(d);
+        for (int i = 1; i < 3; i++) {
+            Direction left = Const.directions[((dir - i) + 8) % 8];
+            if (rc.canMove(left) && !Const.isObstacle(rc, left)) {
+                rc.move(left);
+                return false;
+            }
+            Direction right = Const.directions[(dir + i) % 8];
+            if (rc.canMove(right) && !Const.isObstacle(rc, d)){
+                rc.move(right);
+                return false;
+            }
+        }
 
+        return true;
+    }
 }

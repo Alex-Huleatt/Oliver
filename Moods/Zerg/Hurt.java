@@ -15,7 +15,9 @@ public class Hurt extends Mood {
     }
     
     @Override
-    public Mood swing() {
+    public Mood swing() throws Exception{
+        Mood sp = super.swing();
+        if (sp != null) return sp;
         // - If unit has many allies around it, transition to:
         //  - Zerg.Aggro if there are enemy bots around
         //  - Zerg.Rushing if there are not
