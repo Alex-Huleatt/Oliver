@@ -8,6 +8,7 @@ package Oliver.Moods;
 import Oliver.Const;
 import Oliver.Moods.Defense.Spooked;
 import Oliver.Soldier;
+import Oliver.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
@@ -25,7 +26,7 @@ import java.util.Random;
  */
 public abstract class Mood {
 
-    public Soldier s;
+    public Unit u;
     public RobotController rc;
     public MapLocation enemyHQ;
     public Robot[] enemies;
@@ -41,9 +42,9 @@ public abstract class Mood {
     boolean onRight;
     int pathAllowance = 3;
 
-    public Mood(Soldier s) {
-        this.s = s;
-        this.rc = s.getRC();
+    public Mood(Unit u) {
+        this.u = u;
+        this.rc = u.getRC();
         this.enemyHQ = rc.senseEnemyHQLocation();
         this.team = rc.getTeam();
         this.onRight = false;
@@ -53,8 +54,8 @@ public abstract class Mood {
     }
 
     public Mood swing() throws Exception {
-        if (rc.readBroadcast(0) == 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 100) {
-            return new Spooked(s);
+        if (u instanceof Soldier && rc.readBroadcast(0) == 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 100) {
+            return new Spooked((Soldier) u);
         } else {
             return null;
         }
@@ -323,5 +324,20 @@ public abstract class Mood {
         }
 
         return true;
+    }
+
+    protected void simpleAttack() throws Exception {
+        Robot[] enemies = Const.getEnemies(rc,
+                RobotType.HQ.attackRadiusMaxSquared);
+        if (enemies.length > 0) {
+            RobotInfo[] inf = new RobotInfo[enemies.length];
+            for (int i = 0; i < enemies.length; i++) {
+                inf[i] = rc.senseRobotInfo(enemies[i]);
+            }
+            RobotInfo mah_closest = Const.getClosest(rc.getLocation(), inf);
+            if (rc.canAttackSquare(mah_closest.location)) {
+                rc.attackSquare(mah_closest.location);
+            }
+        }
     }
 }

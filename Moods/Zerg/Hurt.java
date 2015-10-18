@@ -28,9 +28,9 @@ public class Hurt extends Mood {
             return null;
         }
         if (enemies.length == 0) {
-            return new Rushing(s);
+            return new Rushing((Soldier)u);
         }
-        return new Aggro(s, allies, enemies);
+        return new Aggro((Soldier)u, allies, enemies);
     }
 
     @Override
