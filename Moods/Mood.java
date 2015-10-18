@@ -24,17 +24,20 @@ import java.util.Random;
  */
 public abstract class Mood {
 
-    protected Soldier s;
-    protected RobotController rc;
+    public Soldier s;
+    public RobotController rc;
+    public MapLocation enemyHQ;
+    public Robot[] enemies;
+    public Robot[] allies;
+    
     protected MapLocation start;
     protected MapLocation end;
     protected int closest;
     protected boolean bug = false;
-    protected MapLocation enemyHQ;
     protected Random rand = new Random();
-    int dir;
-    boolean onRight;
-    int pathAllowance = 10;
+    protected int dir;
+    protected boolean onRight;
+    protected int pathAllowance = 10;
 
     public Mood(Soldier s) {
         this.s = s;
@@ -54,6 +57,14 @@ public abstract class Mood {
                 rc.getTeam().opponent());
         return Const.robotFilter(obs);
     }
+    
+    public void getNearbyRobots(int disSquared) {
+        Robot[] robots = rc.senseNearbyGameObjects(
+                Robot.class,
+                disSquared);
+        enemies = Const.robotFilter(robots, rc.getTeam().opponent());
+        allies = Const.robotFilter(robots, rc.getTeam());
+    }
 
     public static MapLocation[] getBadMines(RobotController rc) {
         return null;
@@ -64,7 +75,7 @@ public abstract class Mood {
     }
 
     public void move(Direction dir) throws Exception {
-        if (rc.canMove(dir)) {
+        if (rc.isActive() && rc.canMove(dir)) {
             rc.move(dir);
             this.dir = Const.directionToInt(dir);
         } else {
@@ -100,7 +111,7 @@ public abstract class Mood {
             end = goal;
             bug = false;
             closest = Integer.MAX_VALUE;
-            return;
+            // return;
         }
         if (me.distanceSquaredTo(goal) < 2) {
             // you did it! now what?
@@ -126,7 +137,7 @@ public abstract class Mood {
                 MapLocation mineLoc = me.add(me.directionTo(goal)); // TODO: we need to move somewhere between line and goal
                 Team mine = rc.senseMine(mineLoc);
                 if(mine != null && mine != rc.getTeam()) {
-                    rc.defuseMine(mineLoc);
+                    if (rc.isActive()) rc.defuseMine(mineLoc);
                     return;
                 } else if (!Const.isObstacle(rc, mineLoc)) {
                     move(me.directionTo(goal));

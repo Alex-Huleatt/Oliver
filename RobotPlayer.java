@@ -26,6 +26,7 @@ public class RobotPlayer {
                 }
 				// End turn
 			} catch (Exception e) {
+                rc.setIndicatorString(2, "ERROR!!");
 				e.printStackTrace();
 			}
             }
