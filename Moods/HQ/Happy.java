@@ -16,6 +16,7 @@ import battlecode.common.Robot;
 import battlecode.common.RobotType;
 import battlecode.common.Upgrade;
 import battlecode.common.Clock;
+import team016.Comm.RadioController;
 
 /**
  *
@@ -34,7 +35,7 @@ public class Happy extends Mood {
             Robot[] ri_arr = Const.robotFilter(things, team.opponent());
             if (ri_arr.length > 1) {
                 //Broadcast SoS
-                rc.broadcast(0, 1);
+                radC.write(RadioController.HQ_BLOCK, RadioController.SOS_OFFSET, 1);
                 return new Threatened(u);
             }
         }

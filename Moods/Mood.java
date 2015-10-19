@@ -19,6 +19,7 @@ import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.TerrainTile;
 import java.util.Random;
+import team016.Comm.RadioController;
 
 /**
  *
@@ -32,7 +33,8 @@ public abstract class Mood {
     public Robot[] enemies;
     public Robot[] allies;
     public Team team;
-
+    public RadioController radC;
+    
     MapLocation start;
     MapLocation end;
     int closest;
@@ -48,13 +50,14 @@ public abstract class Mood {
         this.enemyHQ = rc.senseEnemyHQLocation();
         this.team = rc.getTeam();
         this.onRight = false;
+        this.radC = new RadioController(rc);
     }
 
     public void act() throws Exception {
     }
 
     public Mood swing() throws Exception {
-        if (u instanceof Soldier && rc.readBroadcast(0) == 1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 100) {
+        if (u instanceof Soldier && radC.read(RadioController.HQ_BLOCK, RadioController.SOS_OFFSET)==1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 100) {
             return new Spooked((Soldier) u);
         } else {
             return null;

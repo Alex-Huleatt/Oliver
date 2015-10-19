@@ -25,15 +25,17 @@ public class RadioController {
     public static final int REPORT_ALIVE_OFFSET = 2;
     public static final int X_POSN_OFFSET = 3;
     public static final int Y_POSN_OFFSET = 4;
+    public static final int SOS_OFFSET = 1;
+    public static final int HQ_BLOCK = 1;
 
     public RadioController(RobotController rc) {
         this.rc = rc;
     }
 
-    public int getBaseChannel(int block) {
+    private int getBaseChannel(int block) {
         int round_num = Clock.getRoundNum();
-        return ((block + 17) * round_num * round_num
-                * ((rc.getTeam() == Team.A) ? 97 : 117) * 37 + GameConstants.BROADCAST_MAX_CHANNELS)
+        return Math.abs(((block + 17) * round_num * round_num
+                * ((rc.getTeam() == Team.A) ? 97 : 117) * 37 + ((int)1.5 * GameConstants.BROADCAST_MAX_CHANNELS)))
                 % GameConstants.BROADCAST_MAX_CHANNELS;
     }
 
@@ -49,8 +51,13 @@ public class RadioController {
         return message ^ MASK;
     }
 
+    private void increment(int chan) throws Exception {
+        write(chan, read(chan) + 1);
+    }
+
     public int read(int block_num, int offset) throws Exception {
         int chan = getChannel(block_num, offset);
+        if (chan < 0 || chan > 65535) System.out.println("Bad chan:"+chan);
         int raw = rc.readBroadcast(chan);
         if (!isSigned(raw)) {
             return -1;
@@ -77,14 +84,10 @@ public class RadioController {
         int chan = getChannel(block_num, offset);
         rc.broadcast(chan, signed);
     }
-    
-    public void write(int chan,int message) throws Exception {
+
+    public void write(int chan, int message) throws Exception {
         int signed = signMessage(message);
         rc.broadcast(chan, signed);
-    }
-
-    private void increment(int chan) throws Exception {
-        write(chan,read(chan)+1);
     }
 
     public MissionType getMissionType(int block_num) throws Exception {
@@ -98,15 +101,20 @@ public class RadioController {
     public MapLocation getMissionLoc(int block_num) throws Exception {
         int x = read(block_num, X_POSN_OFFSET);
         int y = read(block_num, Y_POSN_OFFSET);
-        if (x==-1 || y ==-1) {
+        if (x == -1 || y == -1) {
             return null;
         }
         return new MapLocation(x, y);
     }
-    
+
     public void reportAlive(int block_num) throws Exception {
         increment(getChannel(block_num, REPORT_ALIVE_OFFSET));
     }
 
-
+    public void writeMission(MissionType m, MapLocation loc, int block_num) {
+        
+    }
+    
+    
+    
 }

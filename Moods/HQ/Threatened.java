@@ -13,6 +13,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameObject;
 import battlecode.common.Robot;
 import battlecode.common.RobotType;
+import team016.Comm.RadioController;
 
 /**
  *
@@ -30,7 +31,7 @@ public class Threatened extends Mood {
         if (things.length > 0) {
             Robot[] ri_arr = Const.robotFilter(things, team.opponent());
             if (ri_arr.length == 0) {
-                rc.broadcast(0, 0);
+                radC.write(RadioController.HQ_BLOCK, RadioController.SOS_OFFSET, 0);
                 return new Happy((HQ) u);
             }
         }
