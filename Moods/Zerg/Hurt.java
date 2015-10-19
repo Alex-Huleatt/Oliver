@@ -7,6 +7,7 @@ import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
+import battlecode.common.Direction;
 
 public class Hurt extends Mood {
 
@@ -35,8 +36,11 @@ public class Hurt extends Mood {
 
     @Override
     public void act() throws Exception {
-        // TODO: move around enemies
-        moveTowards(enemyHQ);
+        Direction goal = rc.getLocation().directionTo(enemyHQ);
+        Direction dir = Const.findSafeLoc(rc, enemies, goal, false);
+        if (rc.isActive() && dir != null) {
+            rc.move(dir);
+        }
     }
 
 
