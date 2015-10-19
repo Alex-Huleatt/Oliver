@@ -7,8 +7,8 @@ package Oliver.Moods;
 
 import Oliver.Const;
 import Oliver.Moods.Defense.Spooked;
-import Oliver.Soldier;
-import Oliver.Unit;
+import Oliver.Units.Soldier;
+import Oliver.Units.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameObject;
 import battlecode.common.MapLocation;

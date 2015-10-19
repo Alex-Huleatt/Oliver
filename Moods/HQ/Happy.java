@@ -6,9 +6,9 @@
 package Oliver.Moods.HQ;
 
 import Oliver.Const;
-import Oliver.HQ;
+import Oliver.Units.HQ;
 import Oliver.Moods.Mood;
-import Oliver.Soldier;
+import Oliver.Units.Soldier;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.GameObject;

@@ -6,7 +6,7 @@
 package Oliver.Moods.Supply;
 
 import Oliver.Moods.Mood;
-import Oliver.Soldier;
+import Oliver.Units.Soldier;
 
 /**
  *

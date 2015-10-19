@@ -1,7 +1,7 @@
 package Oliver.Moods.Zerg;
 
 import Oliver.Const;
-import Oliver.Soldier;
+import Oliver.Units.Soldier;
 import Oliver.Moods.Mood;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;

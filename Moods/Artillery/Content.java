@@ -7,7 +7,7 @@ package Oliver.Moods.Artillery;
 
 import Oliver.Const;
 import Oliver.Moods.Mood;
-import Oliver.Soldier;
+import Oliver.Units.Soldier;
 import battlecode.common.GameConstants;
 import battlecode.common.GameObject;
 import battlecode.common.Robot;

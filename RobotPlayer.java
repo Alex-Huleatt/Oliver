@@ -1,5 +1,7 @@
 package Oliver;
 
+import Oliver.Units.Soldier;
+import Oliver.Units.HQ;
 import battlecode.common.Direction;
 import battlecode.common.GameConstants;
 import battlecode.common.RobotController;

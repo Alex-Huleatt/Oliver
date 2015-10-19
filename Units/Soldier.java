@@ -1,4 +1,4 @@
-package Oliver;
+package Oliver.Units;
 
 import battlecode.common.*;
 import java.util.Random;

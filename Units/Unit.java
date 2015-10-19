@@ -3,21 +3,14 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Oliver.Moods;
+package Oliver.Units;
 
-import Oliver.Soldier;
 import battlecode.common.RobotController;
 
 /**
  *
  * @author alexhuleatt
  */
-public class Depressed extends Mood {
-
-    public Depressed(Soldier s) {
-        super(s);
-    }
-
-    @Override
-    public String toString() {return ":(";}
+public interface Unit {
+    public RobotController getRC();
 }
