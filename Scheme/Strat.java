@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Oliver.Scheme;
+package team016.Scheme;
 
 import battlecode.common.RobotController;
 

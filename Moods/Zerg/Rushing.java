@@ -1,8 +1,8 @@
-package Oliver.Moods.Zerg;
+package team016.Moods.Zerg;
 
-import Oliver.Const;
-import Oliver.Units.Soldier;
-import Oliver.Moods.Mood;
+import team016.Const;
+import team016.Units.Soldier;
+import team016.Moods.Mood;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotInfo;

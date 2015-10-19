@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Oliver.Moods.Supply;
+package team016.Moods.Supply;
 
-import Oliver.Moods.Mood;
-import Oliver.Units.Soldier;
+import team016.Moods.Mood;
+import team016.Units.Soldier;
 
 /**
  *

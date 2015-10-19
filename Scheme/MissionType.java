@@ -9,6 +9,6 @@ package team016.Scheme;
  *
  * @author alexhuleatt
  */
-public interface Datum {
-    
+public enum MissionType {
+    CORRUPTED
 }

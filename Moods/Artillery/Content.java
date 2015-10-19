@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Oliver.Moods.Artillery;
+package team016.Moods.Artillery;
 
-import Oliver.Const;
-import Oliver.Moods.Mood;
-import Oliver.Units.Soldier;
+import team016.Const;
+import team016.Moods.Mood;
+import team016.Units.Soldier;
 import battlecode.common.GameConstants;
 import battlecode.common.GameObject;
 import battlecode.common.Robot;

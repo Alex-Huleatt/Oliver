@@ -3,12 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Oliver.Moods.HQ;
+package team016.Moods.HQ;
 
-import Oliver.Const;
-import Oliver.Units.HQ;
-import Oliver.Moods.Mood;
-import Oliver.Units.Soldier;
+import team016.Const;
+import team016.Units.HQ;
+import team016.Moods.Mood;
+import team016.Units.Soldier;
 import battlecode.common.Direction;
 import battlecode.common.GameActionException;
 import battlecode.common.GameObject;

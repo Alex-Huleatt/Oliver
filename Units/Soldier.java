@@ -1,9 +1,9 @@
-package Oliver.Units;
+package team016.Units;
 
 import battlecode.common.*;
 import java.util.Random;
-import Oliver.Moods.*;
-import Oliver.Moods.Zerg.*;
+import team016.Moods.Mood;
+import team016.Moods.Zerg.Rushing;
 
 /* Should probably comment or something */
 
