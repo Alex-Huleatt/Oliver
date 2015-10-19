@@ -40,7 +40,7 @@ public abstract class Mood {
     boolean mining = false;
     int dir;
     boolean onRight;
-    int pathAllowance = 3;
+    int pathAllowance = 30;
 
     public Mood(Unit u) {
         this.u = u;
