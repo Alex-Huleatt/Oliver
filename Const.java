@@ -54,7 +54,8 @@ public class Const {
     }
     
     public static RobotInfo[] getInfos(RobotController rc, Robot[] bots) throws Exception{
-        if (bots.length == 0) return new RobotInfo[0];
+        if (bots == null || bots.length == 0) return new RobotInfo[]{};
+        
         RobotInfo[] info = new RobotInfo[bots.length];
         for (int i = 0; i < bots.length; i++) {
             info[i] = rc.senseRobotInfo(bots[i]);
@@ -66,12 +67,60 @@ public class Const {
         RobotInfo[] infos = getInfos(rc, bots);
         int total = 0;
         for (RobotInfo info : infos) {
-            switch(info.type){
-                case SOLDIER: total++; break;
-                case ARTILLERY: total+=4; break;
-            }
+            total += getThreatLevel(info);
         }
         return total;
+    }
+    
+    public static int getThreatLevel(RobotInfo info) {
+        switch(info.type){
+            case SOLDIER: return 1;
+            case ARTILLERY: return 4;
+            default: return 0;
+        }
+    }
+    
+    /**
+     * Finds an direction that is safe from enemy attack, returns the safe direction
+     * that is closest to the goal, or null when no move should occur.
+     *  
+     * Note: the direction opposite to the goal is only returned when the rc's current 
+     * location is unsafe.
+     */
+    public static Direction findSafeLoc(RobotController rc, Robot[] enemies, Direction goal, boolean ignoreMines) throws Exception {
+        MapLocation me = rc.getLocation();
+        RobotInfo[] infos = getInfos(rc, enemies);
+        if (rc.canMove(goal) && isSafeLoc(me.add(goal), infos)) {
+            return goal;
+        }
+        int dir = directionToInt(goal);
+        Direction check = Direction.NORTH;
+        for (int i = 1; i <= 3; i++) {
+            check = directions[(dir+i)%8];
+            if (rc.canMove(check) && isSafeLoc(me.add(check), infos)) {
+                if (ignoreMines || !isBadMine(rc, me.add(check))) return check;
+            }
+            check = directions[((dir-i)+8)%8];
+            if (rc.canMove(check) && isSafeLoc(me.add(check), infos)) {
+                if (ignoreMines || !isBadMine(rc, me.add(check))) return check;
+            }
+        }
+        if (isSafeLoc(me, infos)) {
+            return null;
+        }
+        if (rc.canMove(goal.opposite()) && isSafeLoc(me.add(goal.opposite()), infos)) {
+            if (ignoreMines || !isBadMine(rc, me.add(check))) return goal.opposite();
+        }
+        return null;
+    }
+    
+    public static boolean isSafeLoc(MapLocation loc, RobotInfo[] infos) {
+        for (RobotInfo info: infos) {
+            if (getThreatLevel(info) > 0 && loc.distanceSquaredTo(info.location) < 2) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static Robot[] robotFilter(GameObject[] obs) {
@@ -169,6 +218,14 @@ public class Const {
         if (rc.canSenseSquare(loc)) {
             GameObject obj = rc.senseObjectAtLocation(loc);
             return (obj != null);
+        }
+        return false;
+    }
+    
+    public static boolean isBadMine(RobotController rc, MapLocation loc) {
+        Team mine = rc.senseMine(loc);
+        if (mine != null && mine != rc.getTeam()) {
+            return true;
         }
         return false;
     }

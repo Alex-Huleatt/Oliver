@@ -15,13 +15,14 @@ import battlecode.common.GameObject;
 import battlecode.common.Robot;
 import battlecode.common.RobotType;
 import battlecode.common.Upgrade;
+import battlecode.common.Clock;
 
 /**
  *
  * @author alexhuleatt
  */
 public class Happy extends Mood {
-
+    boolean defusion;
     public Happy(HQ hq) {
         super(hq);
     }
@@ -42,10 +43,16 @@ public class Happy extends Mood {
 
     @Override
     public void act() throws Exception {
-//        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 300 && rc.isActive() && !rc.hasUpgrade(Upgrade.DEFUSION)) {
-//            rc.researchUpgrade(Upgrade.DEFUSION);
-//        }
+        if (Clock.getRoundNum() == 50 && rc.readBroadcast(0) != 1) {
+            double numMines = rc.senseNonAlliedMineLocations(rc.getLocation(), 100000).length;
+            double mapSize =  rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation());
+            defusion = numMines*3/(mapSize - 2000) > 0.6;
+            rc.setIndicatorString(2, "Ratio: " + (numMines*3/(mapSize - 2000)));
+        }
 
+        if (defusion && rc.isActive() && !rc.hasUpgrade(Upgrade.DEFUSION)) {
+            rc.researchUpgrade(Upgrade.DEFUSION);
+        }
         if (rc.isActive()) {
             // Spawn a soldier
             Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
