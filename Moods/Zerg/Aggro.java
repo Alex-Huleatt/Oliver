@@ -34,10 +34,10 @@ public class Aggro extends Mood {
         // - Else return Aggro
         getNearbyRobots(25);
         if (enemies.length == 0) {
-            return new Rushing(s);
+            return new Rushing((Soldier)u);
         }
         if (rc.getEnergon() < 20) {
-            return new Hurt(s);
+            return new Hurt((Soldier)u);
         }
         
         return null;

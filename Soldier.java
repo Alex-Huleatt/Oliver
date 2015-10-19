@@ -7,7 +7,7 @@ import Oliver.Moods.Zerg.*;
 
 /* Should probably comment or something */
 
-public class Soldier {
+public class Soldier implements Unit {
     RobotController rc;
     Mood emotion;
     public Soldier(RobotController bot) {

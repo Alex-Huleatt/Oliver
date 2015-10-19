@@ -9,6 +9,7 @@ import Oliver.Const;
 import Oliver.Moods.Mood;
 import Oliver.Moods.Zerg.Aggro;
 import Oliver.Soldier;
+import Oliver.Unit;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
@@ -26,7 +27,7 @@ public class Spooked extends Mood {
     @Override
     public Mood swing() throws Exception {
         if (rc.readBroadcast(0) == 0) {
-            return new Aggro(s);
+            return new Aggro((Soldier)u);
         } else {
             return null;
         }

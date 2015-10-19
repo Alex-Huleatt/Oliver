@@ -22,7 +22,7 @@ public class Rushing extends Mood {
         // - If an enemy unit is sensed within range X, Zerg.Aggro
         getNearbyRobots(25);
         if (enemies.length > 0) {
-            return new Aggro(s, allies, enemies);
+            return new Aggro((Soldier)u, allies, enemies);
         }
         return null;
     }
