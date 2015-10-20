@@ -15,14 +15,14 @@ public class Soldier implements Unit {
         rc = bot;
         emotion = new DefaultMood(this);
     }
-
     public void run() throws Exception {
         Mood trans;
         while (true) {
             if (emotion==null) continue;
             this.emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.setIndicatorString(0, emotion.toString());
-            emotion.act();
+            emotion.act(); //Perform
+            emotion.report(); //Generate and send data to StratController.
             rc.yield();
         }
     }

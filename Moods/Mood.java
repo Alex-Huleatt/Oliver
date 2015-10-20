@@ -45,6 +45,7 @@ public abstract class Mood {
     int pathAllowance = 30;
     StratType lastStrat;
     
+    
     public Mood(Unit u) {
         this.u = u;
         this.rc = u.getRC();
@@ -55,6 +56,7 @@ public abstract class Mood {
     }
 
     public void act() throws Exception {
+        
     }
 
     public Mood swing() throws Exception {

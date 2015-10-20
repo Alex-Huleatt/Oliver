@@ -105,4 +105,12 @@ public class StratController {
 
     }
 
+    /**
+     * TODO
+     * @return 
+     */
+    public int[] unitReports() {
+        
+        return null;
+    }
 }

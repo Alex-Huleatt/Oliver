@@ -77,7 +77,9 @@ public class RadioController {
     }
 
     private void increment(int chan) throws Exception {
-        write(chan, read(chan) + 1);
+        int old = read(chan);
+        if (old == -1) return;
+        write(chan, old + 1);
     }
 
     public int read(int block_num, int offset, boolean turnOff) throws Exception {
@@ -93,7 +95,7 @@ public class RadioController {
 
     }
 
-    public int read(int chan) throws Exception {
+    private int read(int chan) throws Exception {
         int raw = rc.readBroadcast(chan);
         if (!isSigned(raw)) {
             return -1;
@@ -115,7 +117,7 @@ public class RadioController {
         rc.broadcast(chan, signed);
     }
 
-    public void write(int chan, int message) throws Exception {
+    private void write(int chan, int message) throws Exception {
         int signed = signMessage(message);
         rc.broadcast(chan, signed);
     }
@@ -135,5 +137,15 @@ public class RadioController {
     public void createMission(MissionType m, MapLocation loc, int block_num) {
 
     }
-
+    
+    /**
+     * Clears a block so every channel is zero.
+     * @param block_num
+     * @param block_size 
+     */
+    public void clearBlock(int block_num, int block_size) {
+        
+    }
+    
+    
 }
