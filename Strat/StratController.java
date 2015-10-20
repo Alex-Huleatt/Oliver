@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package team016.Scheme;
+package team016.Strat;
 
 import battlecode.common.Clock;
 import battlecode.common.GameConstants;
@@ -22,17 +22,20 @@ import team016.Comm.RadioController;
  */
 public class StratController {
 
-    public final RobotController rc; //hq
+    public final RobotController rc; //hq's rc
     public final RadioController radC;
+    public StratType curStrat;
 
     public interface Datum {
-
-        public boolean on();
+        public boolean on() throws Exception;
     }
-    public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame;
+    
+    //this line is going to be long.
+    public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke;
 
     public StratController(RobotController rct) {
         this.rc = rct;
+        this.curStrat = StratType.NO_STRAT;
         closeHQs = new Datum() {
             public boolean on() {
                 return (rc.senseHQLocation().distanceSquaredTo(rc.senseEnemyHQLocation())) < 1000;
@@ -48,7 +51,6 @@ public class StratController {
                 return Clock.getRoundNum() > 500 && Clock.getRoundNum() < 1000;
             }
         };
-
         earlyGame = new Datum() {
             public boolean on() {
                 return Clock.getRoundNum() < 500;
@@ -63,8 +65,13 @@ public class StratController {
                         rc.getTeam().opponent());
                 return rarr.length > 0;
             }
-
         };
+        enemyNuke = new Datum() {
+            public boolean on() throws Exception {
+                return rc.senseEnemyNukeHalfDone();
+            } 
+        };
+        
         radC = new RadioController(rc);
 
     }
@@ -75,16 +82,23 @@ public class StratController {
             System.out.println("SOS!");
             return;
         }
-        //closeHQs.on()
-        if (earlyGame.on()) {
+        if (earlyGame.on() && closeHQs.on()) {
             sendStrat(StratType.ZERG);
             System.out.println("Zerg!");
             return;
         }
+        
+        if (lateGame.on() || enemyNuke.on()) {
+            sendStrat(StratType.ALL_IN);
+            System.out.println("Desperate!");
+            return;
+        }
+        System.out.println("Default");
+        sendStrat(StratType.ZERG);
     }
 
     private void sendStrat(StratType st) throws Exception {
-        radC.write(0, RadioController.STRAT_OFFSET, st.ordinal());
+        radC.write(RadioController.HQ_BLOCK, RadioController.STRAT_OFFSET, st.ordinal());
     }
 
     public void minorStrat() {

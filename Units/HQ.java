@@ -13,8 +13,8 @@ import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
 import team016.Comm.RadioController;
-import team016.Scheme.StratController;
-import team016.Scheme.StratType;
+import team016.Strat.StratController;
+import team016.Strat.StratType;
 
 /* Should probably comment or something */
 public class HQ implements Unit{

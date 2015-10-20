@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package team016.Moods;
 
 import team016.Const;
@@ -21,9 +16,10 @@ import battlecode.common.TerrainTile;
 import java.util.Random;
 import team016.Comm.RadioController;
 import java.util.HashMap;
+import team016.Moods.AllIn.Desperate;
 import team016.Moods.Zerg.Aggro;
 import team016.Moods.Zerg.Rushing;
-import team016.Scheme.StratType;
+import team016.Strat.StratType;
 
 /**
  *
@@ -65,12 +61,12 @@ public abstract class Mood {
         StratType st = radC.curStrat();
         if (st == null) return null;
         if (st != lastStrat) {
-            System.out.println("Swapped Strats " + st + " " + lastStrat);
             lastStrat = st;
             Mood newMood=null;
             switch (st) {
                 case ZERG: newMood = new Rushing((Soldier)u); break;
                 case SOS: newMood = new Spooked((Soldier)u); break;
+                case ALL_IN: newMood = new Desperate((Soldier)u); break;
             }
             if (newMood != null) newMood.lastStrat=st;
             return newMood;
@@ -356,5 +352,17 @@ public abstract class Mood {
                 rc.attackSquare(mah_closest.location);
             }
         }
+    }
+    
+    /**
+     * TODO: This function needs to compile all important data the unit sees.
+     * Cannot be overridden, every unit will perform this.
+     */
+    public final void report() {
+        //mines?
+        //enemies?
+        //enemy encampments?
+        //my health?
+        //
     }
 }

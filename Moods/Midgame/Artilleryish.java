@@ -3,13 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package team016.Scheme;
+package team016.Moods.Midgame;
 
 /**
  *
  * @author alexhuleatt
  */
-public enum StratType {
-    NO_STRAT,ZERG,SOS
+public class Artilleryish {
     
 }
