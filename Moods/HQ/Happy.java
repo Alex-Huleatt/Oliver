@@ -30,15 +30,7 @@ public class Happy extends Mood {
     
     @Override
     public Mood swing() throws Exception {
-        GameObject[] things = rc.senseNearbyGameObjects(Robot.class, RobotType.HQ.sensorRadiusSquared, team.opponent());
-        if (things.length > 0) {
-            Robot[] ri_arr = Const.robotFilter(things, team.opponent());
-            if (ri_arr.length > 1) {
-                //Broadcast SoS
-                radC.write(RadioController.HQ_BLOCK, RadioController.SOS_OFFSET, 1);
-                return new Threatened(u);
-            }
-        }
+
         return null;
     }
 

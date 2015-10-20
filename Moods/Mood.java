@@ -20,6 +20,10 @@ import battlecode.common.Team;
 import battlecode.common.TerrainTile;
 import java.util.Random;
 import team016.Comm.RadioController;
+import java.util.HashMap;
+import team016.Moods.Zerg.Aggro;
+import team016.Moods.Zerg.Rushing;
+import team016.Scheme.StratType;
 
 /**
  *
@@ -43,7 +47,8 @@ public abstract class Mood {
     int dir;
     boolean onRight;
     int pathAllowance = 30;
-
+    StratType lastStrat;
+    
     public Mood(Unit u) {
         this.u = u;
         this.rc = u.getRC();
@@ -57,11 +62,20 @@ public abstract class Mood {
     }
 
     public Mood swing() throws Exception {
-        if (u instanceof Soldier && radC.read(RadioController.HQ_BLOCK, RadioController.SOS_OFFSET)==1 && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 100) {
-            return new Spooked((Soldier) u);
-        } else {
-            return null;
+        StratType st = radC.curStrat();
+        if (st == null) return null;
+        if (st != lastStrat) {
+            System.out.println("Swapped Strats " + st + " " + lastStrat);
+            lastStrat = st;
+            Mood newMood=null;
+            switch (st) {
+                case ZERG: newMood = new Rushing((Soldier)u); break;
+                case SOS: newMood = new Spooked((Soldier)u); break;
+            }
+            if (newMood != null) newMood.lastStrat=st;
+            return newMood;
         }
+        return null;
     }
 
     public void getNearbyRobots(int disSquared) {

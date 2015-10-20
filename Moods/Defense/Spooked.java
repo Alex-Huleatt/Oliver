@@ -26,11 +26,9 @@ public class Spooked extends Mood {
     
     @Override
     public Mood swing() throws Exception {
-        if (rc.readBroadcast(0) == 0) {
-            return new Aggro((Soldier)u);
-        } else {
-            return null;
-        }
+        Mood parent = super.swing();
+        if (parent != null) return parent;
+        return null;
     }
     
     @Override

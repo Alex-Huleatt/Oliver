@@ -12,6 +12,7 @@ import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
 import team016.Scheme.MissionType;
+import team016.Scheme.StratType;
 
 /**
  *
@@ -21,22 +22,42 @@ public class RadioController {
 
     RobotController rc;
     private static final int MASK = 0x93000;
+
     public static final int MISSION_TYPE_OFFSET = 1;
     public static final int REPORT_ALIVE_OFFSET = 2;
     public static final int X_POSN_OFFSET = 3;
     public static final int Y_POSN_OFFSET = 4;
-    public static final int SOS_OFFSET = 1;
+
+    public static final int STRAT_OFFSET = 1;
     public static final int HQ_BLOCK = 1;
+    public static final int MAX_MISSIONS = 5;
 
     public RadioController(RobotController rc) {
         this.rc = rc;
     }
 
-    private int getBaseChannel(int block) {
-        int round_num = Clock.getRoundNum();
-        return Math.abs(((block + 17) * round_num * round_num
-                * ((rc.getTeam() == Team.A) ? 97 : 117) * 37 + ((int)1.5 * GameConstants.BROADCAST_MAX_CHANNELS)))
-                % GameConstants.BROADCAST_MAX_CHANNELS;
+    long xorshiftstar(int x) {
+        x+=1;
+        x ^= x >> 12;
+        x ^= x << 25;
+        x ^= x >> 27;
+        return x * 2685821657736338717l;
+    }
+    
+    private int myHash(int block, int seed) {
+        long rand = Math.abs(xorshiftstar(seed));
+        return (int) ((rand * (1+block)) % GameConstants.BROADCAST_MAX_CHANNELS);
+    }
+
+    private int getBaseChannel_write(int block) {
+        int chan = myHash(block,Clock.getRoundNum());
+        return chan;
+        
+    }
+
+    private int getBaseChannel_read(int block) {
+        
+        return myHash(block,Clock.getRoundNum());
     }
 
     private static int signMessage(int message) {
@@ -44,6 +65,7 @@ public class RadioController {
     }
 
     private static boolean isSigned(int message) {
+        //System.out.println(message + " " + (message&MASK) + " " + MASK);
         return (message & MASK) == MASK;
     }
 
@@ -55,15 +77,17 @@ public class RadioController {
         write(chan, read(chan) + 1);
     }
 
-    public int read(int block_num, int offset) throws Exception {
-        int chan = getChannel(block_num, offset);
-        if (chan < 0 || chan > 65535) System.out.println("Bad chan:"+chan);
+    public int read(int block_num, int offset, boolean turnOff) throws Exception {
+        
+        int chan = getChannel(block_num, offset, turnOff);
         int raw = rc.readBroadcast(chan);
+        
         if (!isSigned(raw)) {
             return -1;
         } else {
             return unsign(raw);
         }
+        
     }
 
     public int read(int chan) throws Exception {
@@ -75,13 +99,16 @@ public class RadioController {
         }
     }
 
-    public int getChannel(int block_num, int offset) {
-        return (getBaseChannel(block_num) + offset) % GameConstants.BROADCAST_MAX_CHANNELS;
+    public int getChannel(int block_num, int offset, boolean writing) {
+        int base = (writing)?
+                getBaseChannel_write(block_num):
+                getBaseChannel_read(block_num);
+        return ( base + offset) % GameConstants.BROADCAST_MAX_CHANNELS;
     }
 
     public void write(int block_num, int offset, int message) throws Exception {
         int signed = signMessage(message);
-        int chan = getChannel(block_num, offset);
+        int chan = getChannel(block_num, offset,true);
         rc.broadcast(chan, signed);
     }
 
@@ -91,7 +118,7 @@ public class RadioController {
     }
 
     public MissionType getMissionType(int block_num) throws Exception {
-        int type = read(block_num, MISSION_TYPE_OFFSET);
+        int type = read(block_num, MISSION_TYPE_OFFSET, true);
         if (type >= 0 && type < MissionType.values().length) {
             return MissionType.values()[type];
         }
@@ -99,22 +126,26 @@ public class RadioController {
     }
 
     public MapLocation getMissionLoc(int block_num) throws Exception {
-        int x = read(block_num, X_POSN_OFFSET);
-        int y = read(block_num, Y_POSN_OFFSET);
+        int x = read(block_num, X_POSN_OFFSET, true);
+        int y = read(block_num, Y_POSN_OFFSET, true);
         if (x == -1 || y == -1) {
             return null;
         }
         return new MapLocation(x, y);
     }
+    
+    public StratType curStrat() throws Exception {
+        int strat_index = read(0, RadioController.STRAT_OFFSET, true);
+        if (strat_index <= 0) return null;
+       return StratType.values()[strat_index];
+    }
 
     public void reportAlive(int block_num) throws Exception {
-        increment(getChannel(block_num, REPORT_ALIVE_OFFSET));
+        increment(getChannel(block_num, REPORT_ALIVE_OFFSET,true));
     }
 
     public void writeMission(MissionType m, MapLocation loc, int block_num) {
-        
+
     }
-    
-    
-    
+
 }

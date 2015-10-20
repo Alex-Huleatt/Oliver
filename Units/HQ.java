@@ -12,6 +12,9 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
+import team016.Comm.RadioController;
+import team016.Scheme.StratController;
+import team016.Scheme.StratType;
 
 /* Should probably comment or something */
 public class HQ implements Unit{
@@ -20,18 +23,21 @@ public class HQ implements Unit{
     Team team;
     MapLocation me;
     Mood emotion;
+    StratController sc;
     public HQ(RobotController bot) {
         rc = bot;
         this.team = rc.getTeam();
         me = rc.getLocation();
         emotion = new Happy(this);
+        sc = new StratController(rc);
     }
 
     public void run() throws Exception {
         Mood trans;
         while (true) {
+            sc.majorStrat();
+            sc.minorStrat();
             this.emotion=((trans=emotion.swing())==null)?emotion:trans;
-            rc.setIndicatorString(0, emotion.toString());
             emotion.act();
             rc.yield();
         }

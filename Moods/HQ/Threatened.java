@@ -27,23 +27,11 @@ public class Threatened extends Mood {
 
     @Override
     public Mood swing() throws Exception {
-        GameObject[] things = rc.senseNearbyGameObjects(Robot.class, RobotType.HQ.sensorRadiusSquared, team.opponent());
-        if (things.length > 0) {
-            Robot[] ri_arr = Const.robotFilter(things, team.opponent());
-            if (ri_arr.length == 0) {
-                radC.write(RadioController.HQ_BLOCK, RadioController.SOS_OFFSET, 0);
-                return new Happy((HQ) u);
-            }
-        }
         return null;
     }
 
     @Override
     public void act() throws Exception {
-//        if (rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation()) > 300 && rc.isActive() && !rc.hasUpgrade(Upgrade.DEFUSION)) {
-//            rc.researchUpgrade(Upgrade.DEFUSION);
-//        }
-
         if (rc.isActive()) {
             // Spawn a soldier
             Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
@@ -59,7 +47,9 @@ public class Threatened extends Mood {
         rc.yield();
 
     }
-    
-    public String toString() {return ":O";}
+
+    public String toString() {
+        return ":O";
+    }
 
 }
