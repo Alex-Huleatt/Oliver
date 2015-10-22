@@ -23,7 +23,7 @@ public class HQ implements Unit{
     Team team;
     MapLocation me;
     Mood emotion;
-    StratController sc;
+    public StratController sc;
     public HQ(RobotController bot) {
         rc = bot;
         this.team = rc.getTeam();
@@ -37,6 +37,7 @@ public class HQ implements Unit{
         while (true) {
             sc.majorStrat();
             sc.minorStrat();
+            sc.setHQStrat();
             this.emotion=((trans=emotion.swing())==null)?emotion:trans;
             emotion.act();
             rc.yield();

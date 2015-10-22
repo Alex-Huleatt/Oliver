@@ -97,7 +97,7 @@ public abstract class Mood {
             rc.move(dir);
             this.dir = Const.directionToInt(dir);
         } else {
-            System.out.println("rc failed to move in dir");
+            //System.out.println("rc failed to move in dir");
         }
     }
 
@@ -106,7 +106,7 @@ public abstract class Mood {
             rc.move(Const.directions[dir]);
             this.dir = dir;
         } else {
-            System.out.println("rc failed to move in dir");
+            //System.out.println("rc failed to move in dir");
         }
     }
 
@@ -317,7 +317,7 @@ public abstract class Mood {
 
     public boolean moveish(Direction d) throws Exception {
         if (!rc.isActive()) {
-            System.out.println("rc wasn't active in moveish");
+            //System.out.println("rc wasn't active in moveish");
             return false;
         }
         if (rc.canMove(d) && !Const.isObstacle(rc, d)) {

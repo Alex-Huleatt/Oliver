@@ -48,7 +48,7 @@ public class Aggro extends Mood {
     public void act() throws Exception {
         // TODO: move towards closest enemy
         if (enemies == null || enemies.length == 0) {
-            System.out.println("In aggro state with no enemies");
+            //System.out.println("In aggro state with no enemies");
             return;
         }
         RobotInfo bot = Const.getClosest(rc.getLocation(), enemies, rc);

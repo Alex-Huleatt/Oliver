@@ -17,17 +17,20 @@ import battlecode.common.RobotType;
 import battlecode.common.Upgrade;
 import battlecode.common.Clock;
 import team016.Comm.RadioController;
+import team016.Strat.StratType;
 
 /**
  *
  * @author alexhuleatt
  */
 public class Happy extends Mood {
+
     boolean defusion;
+
     public Happy(HQ hq) {
         super(hq);
     }
-    
+
     @Override
     public Mood swing() throws Exception {
 
@@ -36,30 +39,32 @@ public class Happy extends Mood {
 
     @Override
     public void act() throws Exception {
-        if (Clock.getRoundNum() == 50 && rc.readBroadcast(0) != 1) {
-            double numMines = rc.senseNonAlliedMineLocations(rc.getLocation(), 100000).length;
-            double mapSize =  rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation());
-            defusion = numMines*3/(mapSize - 2000) > 0.6;
-            rc.setIndicatorString(2, "Ratio: " + (numMines*3/(mapSize - 2000)));
-        }
-
-        if (defusion && rc.isActive() && !rc.hasUpgrade(Upgrade.DEFUSION)) {
-            rc.researchUpgrade(Upgrade.DEFUSION);
-        }
+        StratType mahStrat = ((HQ) u).sc.hqStrat;
+        end:
         if (rc.isActive()) {
-            // Spawn a soldier
-            Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-            if (rc.canMove(dir)) {
-                rc.spawn(dir);
+            
+            if (mahStrat == StratType.RUSH_DEFUSION) {
+                rc.researchUpgrade(Upgrade.DEFUSION);
+            }
+
+            if (rc.isActive()) {
+                // Spawn a soldier
+                Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
+                if (rc.canMove(dir)) {
+                    rc.spawn(dir);
+                }
+            }
+            if (rc.isActive()) {
+                simpleAttack();
             }
         }
-        if (rc.isActive()) {
-            simpleAttack();
-        }
+        
         rc.yield();
     }
-    
+
     @Override
-    public String toString() {return "^.^";}
+    public String toString() {
+        return "^.^";
+    }
 
 }
