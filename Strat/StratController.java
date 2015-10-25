@@ -182,12 +182,12 @@ public class StratController {
     }
     
     /**TODO**/
-    private boolean goodSupplySquare(MapLocation loc) {
+    private static boolean goodSupplySquare(RadioController rc, MapLocation loc) {
         return false;
     }
     
     /**TODO**/
-    private boolean goodArtillerySquare(MapLocation loc) {
+    private static boolean goodArtillerySquare(RadioController rc, MapLocation loc) {
         return false;
     }
 
