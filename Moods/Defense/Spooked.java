@@ -9,7 +9,6 @@ import team016.Const;
 import team016.Moods.Mood;
 import team016.Moods.Zerg.Aggro;
 import team016.Units.Soldier;
-import team016.Units.Unit;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;

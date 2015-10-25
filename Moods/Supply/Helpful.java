@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 import team016.Moods.DefaultMood;
 import team016.Moods.Mood;
 import team016.Units.Soldier;
+import team016.Units.Unit;
 
 /**
  *
@@ -24,7 +25,7 @@ public class Helpful extends Mood {
     MapLocation goal;
 
     public Helpful(Soldier s) throws Exception {
-        super(s);
+        super((Unit)s);
         MapLocation[] encamps
                 = rc.senseEncampmentSquares(rc.getLocation(), 100000, Team.NEUTRAL);
         System.out.println(encamps.length);

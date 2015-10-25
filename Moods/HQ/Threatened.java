@@ -8,12 +8,13 @@ package team016.Moods.HQ;
 import team016.Const;
 import team016.Units.HQ;
 import team016.Moods.Mood;
-import team016.Units.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameObject;
 import battlecode.common.Robot;
 import battlecode.common.RobotType;
 import team016.Comm.RadioController;
+import team016.Units.Soldier;
+import team016.Units.Unit;
 
 /**
  *
@@ -21,8 +22,8 @@ import team016.Comm.RadioController;
  */
 public class Threatened extends Mood {
 
-    public Threatened(Unit u) {
-        super(u);
+    public Threatened(Soldier s) {
+        super(s);
     }
 
     @Override

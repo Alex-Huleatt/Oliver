@@ -17,15 +17,14 @@ import team016.Strat.StratController;
 import team016.Strat.StratType;
 
 /* Should probably comment or something */
-public class HQ implements Unit{
+public class HQ extends Unit {
 
-    RobotController rc;
     Team team;
     MapLocation me;
     Mood emotion;
     public StratController sc;
-    public HQ(RobotController bot) {
-        rc = bot;
+    public HQ(RobotController rc) {
+        super(rc);
         this.team = rc.getTeam();
         me = rc.getLocation();
         emotion = new Happy(this);
@@ -44,6 +43,5 @@ public class HQ implements Unit{
         }
         
     }
-    
-    public RobotController getRC(){return rc;}
+
 }

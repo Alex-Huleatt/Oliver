@@ -11,14 +11,11 @@ import battlecode.common.RobotController;
  *
  * @author alexhuleatt
  */
-public class Supplier implements Unit  {
+public class Supplier extends Unit  {
+    
 
     public Supplier(RobotController rc) {
-        //super(rc);
-    }
-
-    public RobotController getRC() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        super(rc);
     }
     
 }

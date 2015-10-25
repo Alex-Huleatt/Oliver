@@ -5,6 +5,7 @@
  */
 package team016.Moods;
 
+import team016.Units.Soldier;
 import team016.Units.Unit;
 
 /**
@@ -13,8 +14,8 @@ import team016.Units.Unit;
  */
 public class DefaultMood extends Mood {
 
-    public DefaultMood(Unit u) {
-        super(u);
+    public DefaultMood(Soldier s) {
+        super((Unit)s);
     }
     
 }

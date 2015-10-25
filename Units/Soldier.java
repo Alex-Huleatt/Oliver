@@ -8,10 +8,11 @@ import team016.Moods.Zerg.Rushing;
 
 /* Should probably comment or something */
 
-public class Soldier implements Unit {
+public class Soldier extends Unit {
     RobotController rc;
     Mood emotion;
     public Soldier(RobotController bot) {
+        super(bot);
         rc = bot;
         emotion = new DefaultMood(this);
     }

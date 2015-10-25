@@ -4,7 +4,6 @@ import battlecode.common.Clock;
 import team016.Const;
 import team016.Moods.Defense.Spooked;
 import team016.Units.Soldier;
-import team016.Units.Unit;
 import battlecode.common.Direction;
 import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
@@ -23,6 +22,7 @@ import team016.Moods.Zerg.Aggro;
 import team016.Moods.Zerg.Rushing;
 import team016.Strat.StratType;
 import team016.Timer;
+import team016.Units.Unit;
 
 /**
  *
@@ -50,7 +50,7 @@ public abstract class Mood {
 
     public Mood(Unit u) {
         this.u = u;
-        this.rc = u.getRC();
+        this.rc = u.rc;
         this.enemyHQ = rc.senseEnemyHQLocation();
         this.team = rc.getTeam();
         this.onRight = false;
