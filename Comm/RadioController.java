@@ -116,6 +116,17 @@ public class RadioController {
 
     }
 
+    /**
+     * Reports the existence of a unit, by type. Writes to the REPORT_BLOCK
+     * @param offset Which unit type to report
+     * @throws Exception 
+     */
+    public void unitReport(int offset) throws Exception {
+        int old = read(REPORT_BLOCK, offset, Clock.getRoundNum());
+        if (old == -1) old = 0;
+        write(REPORT_BLOCK, offset, old+1, Clock.getRoundNum());
+    }
+    
     public int[] readBlock(int block_num, int block_size, int round_num) throws Exception {
         int[] block = new int[block_size];
         for (int i = 0; i < block.length; i++) {
