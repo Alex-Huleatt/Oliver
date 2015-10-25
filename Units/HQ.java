@@ -31,6 +31,7 @@ public class HQ extends Unit {
         sc = new StratController(rc);
     }
 
+    @Override
     public void run() throws Exception {
         Mood trans;
         while (true) {

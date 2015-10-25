@@ -34,6 +34,7 @@ public class RadioController {
     public static final int REPORT_BLOCK = 1;
     public static final int SUPPLY_COUNT_OFFSET = 2;
     public static final int SUPPLY_REQUEST_OFFSET = 3;
+    public static final int SUPPLY_SQUARE_POSN = 4;
 
     //mission block
     public static final int MISSION_BLOCK = 2;

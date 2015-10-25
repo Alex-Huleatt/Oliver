@@ -14,6 +14,7 @@ import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
 import team016.Comm.RadioController;
+import team016.Const;
 
 /**
  * This should be the core of everything. HQ will have this instance, this
@@ -35,7 +36,7 @@ public class StratController {
     }
 
     //this line is going to be long.
-    public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke, 
+    public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke,
             shouldDefuse, shouldReactor, shouldVision, needSupply;
 
     public StratController(RobotController rct) {
@@ -91,15 +92,17 @@ public class StratController {
             public boolean on() throws Exception {
                 return !rc.hasUpgrade(Upgrade.FUSION);
             }
-            
+
         };
         radC = new RadioController(rc);
         needSupply = new Datum() {
             public boolean on() throws Exception {
-                if (Clock.getRoundNum()==0) return true;
-                return radC.read(RadioController.REPORT_BLOCK, RadioController.SUPPLY_COUNT_OFFSET, Clock.getRoundNum()-1)<4;
+                if (Clock.getRoundNum() == 0) {
+                    return true;
+                }
+                return radC.read(RadioController.REPORT_BLOCK, RadioController.SUPPLY_COUNT_OFFSET, Clock.getRoundNum() - 1) < 1;
             }
-            
+
         };
     }
 
@@ -120,7 +123,6 @@ public class StratController {
 //                toStrat = StratType.ALL_IN;
 //                break lbl;
 //            }
-            
             toStrat = StratType.ZERG;
         }
         if (curStrat != toStrat) {
@@ -135,21 +137,20 @@ public class StratController {
         radC.write(RadioController.HQ_BLOCK, RadioController.STRAT_OFFSET, st.ordinal(), Clock.getRoundNum());
     }
 
-    public void setHQStrat() throws Exception{
+    public void setHQStrat() throws Exception {
         StratType toStrat = StratType.NO_STRAT;
         //lbl:
         {
             if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
                 toStrat = StratType.RUSH_DEFUSION;
             }
-            
+
 //            if (shouldReactor.on() && !spookedHQ.on() && earlyGame.on()) {
 //                toStrat = StratType.RUSH_REACTOR;
 //            }
-
         }
         hqStrat = toStrat;
-        
+
     }
 
     /**
@@ -157,9 +158,20 @@ public class StratController {
      */
     public void minorStrat() throws Exception {
         if (needSupply.on()) {
-            radC.write(RadioController.REPORT_BLOCK, 
-                    RadioController.SUPPLY_REQUEST_OFFSET, 1, Clock.getRoundNum());
+            int sup = findGoodSupplySquare();
+            if (sup != -1) {
+                radC.write(RadioController.REPORT_BLOCK,
+                        RadioController.SUPPLY_REQUEST_OFFSET, 
+                        1, 
+                        Clock.getRoundNum());
+                
+
+            }
         }
+        radC.write(RadioController.REPORT_BLOCK,
+                        RadioController.SUPPLY_SQUARE_POSN, 
+                        findGoodSupplySquare(), 
+                        Clock.getRoundNum());
     }
 
     /**
@@ -172,21 +184,39 @@ public class StratController {
         return null;
     }
 
-    /**TODO**/
+    /**
+     * TODO*
+     */
     public void encamp() throws Exception {
         //rc.senseAllEncampmentSquares();
         MapLocation[] encamps = rc.senseAllEncampmentSquares();
-        
-        
-        
+
     }
-    
-    /**TODO**/
-    private static boolean goodSupplySquare(RadioController rc, MapLocation loc) {
-        return false;
+
+    /**
+     * TODO*
+     */
+    private int findGoodSupplySquare() throws Exception {
+        MapLocation me = rc.getLocation();
+        MapLocation[] encamps = rc.senseEncampmentSquares(me, 100000, Team.NEUTRAL);
+        if (encamps.length == 0) {
+            return -1;
+        }
+        MapLocation m = encamps[0];
+        int minDis = me.distanceSquaredTo(m);
+        for (MapLocation t : encamps) {
+            int dt = me.distanceSquaredTo(t);
+            if (minDis>dt && dt > 1) {
+                m=t;
+                minDis=dt;
+            }
+        }
+        return Const.locToInt(m);
     }
-    
-    /**TODO**/
+
+    /**
+     * TODO*
+     */
     private static boolean goodArtillerySquare(RadioController rc, MapLocation loc) {
         return false;
     }

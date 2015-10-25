@@ -260,12 +260,10 @@ public class Const {
         return new MapLocation((start.x + end.x) / 2, (start.y + end.y) / 2);
     }
 
-    // Alex's idea for name
-    public static Direction seven(MapLocation start, MapLocation end, MapLocation me) {
-        MapLocation midpoint = new MapLocation((me.x + (start.y - end.y)), (me.y + (start.x - end.y)));
-        // TODO: finish getting the appropriate mining angle when off course
-        return Direction.NORTH;
+    public static MapLocation intToLoc(int l) {
+        return new MapLocation(l>>8,l&255);
     }
-   
-
+    public static int locToInt(MapLocation m) {
+        return m.x<<8|m.y;
+    }
 }

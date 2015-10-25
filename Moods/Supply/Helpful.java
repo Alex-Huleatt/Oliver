@@ -5,12 +5,15 @@
  */
 package team016.Moods.Supply;
 
+import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import team016.Comm.RadioController;
+import team016.Const;
 import team016.Moods.DefaultMood;
 import team016.Moods.Mood;
 import team016.Units.Soldier;
@@ -23,52 +26,51 @@ import team016.Units.Unit;
 public class Helpful extends Mood {
 
     MapLocation goal;
-
+    boolean acted;
     public Helpful(Soldier s) throws Exception {
-        super((Unit)s);
-        MapLocation[] encamps
-                = rc.senseEncampmentSquares(rc.getLocation(), 100000, Team.NEUTRAL);
-        System.out.println(encamps.length);
-        for (MapLocation m : encamps) {
-            if (goodSupplySquare(m)) {
-                goal = m;
-                break;
-            }
-        }
+        super((Unit) s);
+        findGoal();
+        acted=false;
     }
 
-    /**
-     * TOD
-     *
-     * @param m
-     * @param mO
-     *
-     * @return
-     */
-    public final boolean goodSupplySquare(MapLocation m) {
-        return true;
+    public final void findGoal() throws Exception {
+        goal = Const.intToLoc(radC.read(RadioController.REPORT_BLOCK, 
+                RadioController.SUPPLY_SQUARE_POSN, 
+                Clock.getRoundNum()));
     }
-
     @Override
     public Mood swing() {
-        if (goal == null) {
-            return new DefaultMood((Soldier)u);
-        }
+//        if (goal == null) {
+//            return new DefaultMood((Soldier) u);
+//        }
+//        return null;
         return null;
     }
 
     @Override
     public void act() throws Exception {
+        if(!acted) {
+            acted=true;
+            radC.write(RadioController.REPORT_BLOCK, RadioController.SUPPLY_REQUEST_OFFSET, 0, Clock.getRoundNum());
+        }
         //report my life
+        radC.unitReport(RadioController.SUPPLY_COUNT_OFFSET);
+        
         if (goal != null) {
             MapLocation me = rc.getLocation();
+            if (rc.isActive()) {
+                if (me.distanceSquaredTo(goal) == 0 && rc.senseEncampmentSquare(goal)) {
+                    rc.captureEncampment(RobotType.SUPPLIER);
+                    return;
+                }
 
-            if (me.distanceSquaredTo(goal) == 0) {
-                rc.captureEncampment(RobotType.SUPPLIER);
-                return;
+                moveTowards(goal);
+                if (Const.isObstacle(rc, goal)) {
+                    findGoal();
+                }
             }
-
-            moveTowards(goal);
+        } else {
+            findGoal();
         }
     }
 

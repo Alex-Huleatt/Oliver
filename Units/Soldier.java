@@ -16,6 +16,7 @@ public class Soldier extends Unit {
         rc = bot;
         emotion = new DefaultMood(this);
     }
+    @Override
     public void run() throws Exception {
         Mood trans;
         while (true) {

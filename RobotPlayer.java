@@ -6,6 +6,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameConstants;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import team016.Units.Supplier;
 
 /** The example funcs player is a player meant to demonstrate basic usage of the most common commands.
  * Robots will move around randomly, occasionally mining and writing useless messages.
@@ -21,6 +22,9 @@ public class RobotPlayer {
                         break;
                     case SOLDIER:
                         (new Soldier(rc)).run();
+                        break;
+                    case SUPPLIER:
+                        (new Supplier(rc)).run();
                         break;
                     default:
                         System.out.println("Unknown rc type: " + rc.getType());

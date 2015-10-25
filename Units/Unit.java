@@ -17,5 +17,7 @@ public abstract class Unit {
         this.rc = rc;
     }
     
+    public void run() throws Exception{}
+    
     
 }

@@ -158,7 +158,7 @@ public abstract class Mood {
         if (mining && (Const.locOnLine(start, end, me) && disToGoal < closest)) {
             mining = false;
         }
-        if (disToGoal < 2) {
+        if (disToGoal ==0) {
             // you did it! now what?
             return;
         }
