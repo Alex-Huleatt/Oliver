@@ -42,9 +42,12 @@ public class Happy extends Mood {
         StratType mahStrat = ((HQ) u).sc.hqStrat;
         end:
         if (rc.isActive()) {
-            
+
             if (mahStrat == StratType.RUSH_DEFUSION) {
                 rc.researchUpgrade(Upgrade.DEFUSION);
+            }
+            if (mahStrat == StratType.RUSH_REACTOR) {
+                rc.researchUpgrade(Upgrade.FUSION);
             }
 
             if (rc.isActive()) {
@@ -58,7 +61,7 @@ public class Happy extends Mood {
                 simpleAttack();
             }
         }
-        
+
         rc.yield();
     }
 

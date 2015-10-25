@@ -1,5 +1,6 @@
 package team016.Moods.Zerg;
 
+import battlecode.common.Clock;
 import team016.Const;
 import team016.Units.Soldier;
 import team016.Moods.Mood;
@@ -10,6 +11,7 @@ import battlecode.common.RobotType;
 import battlecode.common.Direction;
 import battlecode.common.MapLocation;
 import battlecode.common.Team;
+import team016.Timer;
 
 
 public class Aggro extends Mood {
@@ -46,21 +48,29 @@ public class Aggro extends Mood {
 
     @Override
     public void act() throws Exception {
+        MapLocation me = rc.getLocation();
         // TODO: move towards closest enemy
         if (enemies == null || enemies.length == 0) {
             //System.out.println("In aggro state with no enemies");
             return;
         }
-        RobotInfo bot = Const.getClosest(rc.getLocation(), enemies, rc);
+        RobotInfo bot = Const.getClosest(me, enemies, rc);
+        
         if (bot == null) {
             System.out.println("Aggro couldn't find closest bot!");
+            return;
         }
         MapLocation closest = bot.location;
-        Direction dir = rc.getLocation().directionTo(closest);
-        int dist = rc.getLocation().distanceSquaredTo(closest);
+        
+        Direction dir = me.directionTo(closest);
+        int dist = me.distanceSquaredTo(closest);
         if (Const.getThreat(rc, enemies) < Const.getThreat(rc, allies) + 1) {
-            if (dist > 15) moveTowards(closest);
-            else moveish(dir);
+            if (dist > 15) {
+                moveTowards(closest);
+            }
+            else {
+                moveish(dir);
+            }
             if (rc.isActive()) {
                 mine(dir);
             }
@@ -76,7 +86,7 @@ public class Aggro extends Mood {
         
         MapLocation mine;
         Team mTeam;
-        for (int i = 0; i < 1; i++) {
+        for (int i = -1; i <= 1; i++) {
             mine = me.add(Const.directions[((dir + i) + 8) % 8]);
             mTeam = rc.senseMine(mine);
             if (mTeam == Team.NEUTRAL) {

@@ -1,5 +1,6 @@
 package team016.Moods;
 
+import battlecode.common.Clock;
 import team016.Const;
 import team016.Moods.Defense.Spooked;
 import team016.Units.Soldier;
@@ -17,9 +18,11 @@ import java.util.Random;
 import team016.Comm.RadioController;
 import java.util.HashMap;
 import team016.Moods.AllIn.Desperate;
+import team016.Moods.Supply.Helpful;
 import team016.Moods.Zerg.Aggro;
 import team016.Moods.Zerg.Rushing;
 import team016.Strat.StratType;
+import team016.Timer;
 
 /**
  *
@@ -34,7 +37,7 @@ public abstract class Mood {
     public Robot[] allies;
     public Team team;
     public RadioController radC;
-    
+
     MapLocation start;
     MapLocation end;
     int closest;
@@ -44,8 +47,7 @@ public abstract class Mood {
     boolean onRight;
     int pathAllowance = 30;
     StratType lastStrat;
-    
-    
+
     public Mood(Unit u) {
         this.u = u;
         this.rc = u.getRC();
@@ -56,32 +58,52 @@ public abstract class Mood {
     }
 
     public void act() throws Exception {
-        
+
     }
 
     public Mood swing() throws Exception {
-        StratType st = radC.curStrat();
-        if (st == null) return null;
+        StratType st = radC.curStrat(Clock.getRoundNum());
+        if (st == null) {
+            return null;
+        }
         if (st != lastStrat) {
             lastStrat = st;
-            Mood newMood=null;
+            Mood newMood = null;
             switch (st) {
-                case ZERG: newMood = new Rushing((Soldier)u); break;
-                case SOS: newMood = new Spooked((Soldier)u); break;
-                case ALL_IN: newMood = new Desperate((Soldier)u); break;
+                case ZERG:
+                    newMood = new Rushing((Soldier) u);
+                    break;
+                case SOS:
+                    newMood = new Spooked((Soldier) u);
+                    break;
+                case ALL_IN:
+                    newMood = new Desperate((Soldier) u);
+                    break;
             }
-            if (newMood != null) newMood.lastStrat=st;
+            if (newMood != null) {
+                newMood.lastStrat = st;
+            }
             return newMood;
+        }
+        
+        boolean needSupply = radC.read(RadioController.REPORT_BLOCK, 
+                RadioController.SUPPLY_REQUEST_OFFSET, Clock.getRoundNum())==1;
+        
+        if (needSupply) {
+            return new Helpful((Soldier) u);
         }
         return null;
     }
 
     public void getNearbyRobots(int disSquared) {
-        Robot[] robots = rc.senseNearbyGameObjects(
+        enemies = rc.senseNearbyGameObjects(
                 Robot.class,
-                disSquared);
-        enemies = Const.robotFilter(robots, rc.getTeam().opponent());
-        allies = Const.robotFilter(robots, rc.getTeam());
+                disSquared,
+                team.opponent());
+        allies = rc.senseNearbyGameObjects(
+                Robot.class,
+                disSquared,
+                team);
     }
 
     public static MapLocation[] getBadMines(RobotController rc) {
@@ -120,6 +142,7 @@ public abstract class Mood {
      */
     public void moveTowards(MapLocation goal) throws Exception {
         MapLocation me = rc.getLocation();
+
         if (start == null || end == null || !goal.equals(end)) {
             // setup
             start = rc.getLocation();
@@ -130,37 +153,36 @@ public abstract class Mood {
             // return;
         }
 
-        if (me.distanceSquaredTo(goal) < 2) {
+        int disToGoal = me.distanceSquaredTo(goal);
+        Direction dirToGoal = me.directionTo(goal);
+        if (mining && (Const.locOnLine(start, end, me) && disToGoal < closest)) {
+            mining = false;
+        }
+        if (disToGoal < 2) {
             // you did it! now what?
             return;
         }
-        if (!bug && !Const.isObstacle(rc, me.directionTo(goal))
+        if (bug && Const.locOnLine(start, goal, me)
+                && disToGoal < closest) {
+            // we can stop bugging.
+            bug = false;
+            dir = Const.directionToInt(dirToGoal);
+        }
+
+        if (!bug && !Const.isObstacle(rc, dirToGoal)
                 && Const.locOnLine(start, goal, me)) {
             // we can move straight on the line
             move(me.directionTo(goal));
             return;
         }
-        if (bug && Const.locOnLine(start, goal, me)
-                && me.distanceSquaredTo(goal) < closest) {
-            // we can stop bugging.
-            bug = false;
-            dir = Const.directionToInt(me.directionTo(goal));
-            moveTowards(goal);
-            return;
+
+        if (disToGoal < closest) {
+            closest = disToGoal;
         }
 
-        if (me.distanceSquaredTo(end) < closest) {
-            closest = me.distanceSquaredTo(end);
-        }
-
-        if (mining || me.distanceSquaredTo(goal) > pathAllowance + closest) {
+        if (mining || disToGoal > pathAllowance + closest) {
             rc.setIndicatorString(1, "Too far off path!");
             mining = true;
-            if (Const.locOnLine(start, end, me) && me.distanceSquaredTo(goal) < closest) {
-                mining = false;
-                moveTowards(goal);
-                return;
-            }
             int perp = getDir(me, start, goal);
             //Now we need to determine which orientation
             MapLocation min = null;
@@ -355,7 +377,7 @@ public abstract class Mood {
             }
         }
     }
-    
+
     /**
      * TODO: This function needs to compile all important data the unit sees.
      * Cannot be overridden, every unit will perform this.

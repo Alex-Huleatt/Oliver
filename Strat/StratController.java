@@ -7,6 +7,7 @@ package team016.Strat;
 
 import battlecode.common.Clock;
 import battlecode.common.GameConstants;
+import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
@@ -34,7 +35,8 @@ public class StratController {
     }
 
     //this line is going to be long.
-    public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke, shouldDefuse;
+    public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke, 
+            shouldDefuse, shouldReactor, shouldVision, needSupply;
 
     public StratController(RobotController rct) {
         this.rc = rct;
@@ -84,8 +86,21 @@ public class StratController {
                 return false;
             }
         };
-        radC = new RadioController(rc);
+        shouldReactor = new Datum() {
 
+            public boolean on() throws Exception {
+                return !rc.hasUpgrade(Upgrade.FUSION);
+            }
+            
+        };
+        radC = new RadioController(rc);
+        needSupply = new Datum() {
+            public boolean on() throws Exception {
+                if (Clock.getRoundNum()==0) return true;
+                return radC.read(RadioController.REPORT_BLOCK, RadioController.SUPPLY_COUNT_OFFSET, Clock.getRoundNum()-1)<4;
+            }
+            
+        };
     }
 
     public void majorStrat() throws Exception {
@@ -101,10 +116,11 @@ public class StratController {
                 break lbl;
             }
 
-            if (lateGame.on() || enemyNuke.on()) {
-                toStrat = StratType.ALL_IN;
-                break lbl;
-            }
+//            if (lateGame.on() || enemyNuke.on()) {
+//                toStrat = StratType.ALL_IN;
+//                break lbl;
+//            }
+            
             toStrat = StratType.ZERG;
         }
         if (curStrat != toStrat) {
@@ -116,16 +132,20 @@ public class StratController {
     }
 
     private void sendStrat(StratType st) throws Exception {
-        radC.write(RadioController.HQ_BLOCK, RadioController.STRAT_OFFSET, st.ordinal());
+        radC.write(RadioController.HQ_BLOCK, RadioController.STRAT_OFFSET, st.ordinal(), Clock.getRoundNum());
     }
 
     public void setHQStrat() throws Exception{
         StratType toStrat = StratType.NO_STRAT;
         //lbl:
         {
-            if (shouldDefuse.on() && !spookedHQ.on()) {
+            if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
                 toStrat = StratType.RUSH_DEFUSION;
             }
+            
+//            if (shouldReactor.on() && !spookedHQ.on() && earlyGame.on()) {
+//                toStrat = StratType.RUSH_REACTOR;
+//            }
 
         }
         hqStrat = toStrat;
@@ -136,7 +156,10 @@ public class StratController {
      * TODO
      */
     public void minorStrat() throws Exception {
-
+        if (needSupply.on()) {
+            radC.write(RadioController.REPORT_BLOCK, 
+                    RadioController.SUPPLY_REQUEST_OFFSET, 1, Clock.getRoundNum());
+        }
     }
 
     /**
@@ -148,4 +171,24 @@ public class StratController {
 
         return null;
     }
+
+    /**TODO**/
+    public void encamp() throws Exception {
+        //rc.senseAllEncampmentSquares();
+        MapLocation[] encamps = rc.senseAllEncampmentSquares();
+        
+        
+        
+    }
+    
+    /**TODO**/
+    private boolean goodSupplySquare(MapLocation loc) {
+        return false;
+    }
+    
+    /**TODO**/
+    private boolean goodArtillerySquare(MapLocation loc) {
+        return false;
+    }
+
 }
