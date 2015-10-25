@@ -113,6 +113,11 @@ public class Const {
         }
         return null;
     }
+
+    public static boolean isSafeLoc(RobotController rc, MapLocation loc, Robot[] enemies) throws Exception{
+        RobotInfo[] infos = getInfos(rc, enemies);
+        return isSafeLoc(loc, infos);
+    }
     
     public static boolean isSafeLoc(MapLocation loc, RobotInfo[] infos) {
         for (RobotInfo info: infos) {

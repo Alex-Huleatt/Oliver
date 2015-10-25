@@ -49,7 +49,6 @@ public class Aggro extends Mood {
     @Override
     public void act() throws Exception {
         MapLocation me = rc.getLocation();
-        // TODO: move towards closest enemy
         if (enemies == null || enemies.length == 0) {
             //System.out.println("In aggro state with no enemies");
             return;
@@ -92,8 +91,9 @@ public class Aggro extends Mood {
             if (mTeam == Team.NEUTRAL) {
                 rc.defuseMine(mine);
                 return;
-            } else if (mTeam == rc.getTeam().opponent()) {
-                // TODO: check if mine location is safe
+            } else if (mTeam == rc.getTeam().opponent() && Const.isSafeLoc(rc, me, enemies)) {
+                rc.defuseMine(mine);
+                return;
             }
         }
         
