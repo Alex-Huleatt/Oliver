@@ -63,7 +63,7 @@ public class Aggro extends Mood {
         
         Direction dir = me.directionTo(closest);
         int dist = me.distanceSquaredTo(closest);
-        if (Const.getThreat(rc, enemies) < Const.getThreat(rc, allies) + 1) {
+        if (Const.getThreat(rc, enemies)  < Const.getThreat(rc, allies)) {
             if (dist > 15) {
                 moveTowards(closest);
             }
@@ -74,7 +74,7 @@ public class Aggro extends Mood {
                 mine(dir);
             }
             return;
-        } else if (dist < 10) {
+        } else if (dist < 25) {
             moveish(dir.opposite());
         }
     }
