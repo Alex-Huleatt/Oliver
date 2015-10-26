@@ -237,6 +237,7 @@ public class StratController {
     }
 
     private double supplyHeuristic(MapLocation m) {
+        if (m.distanceSquaredTo(rc.getLocation())<2) return 10000;
         return .5 * m.distanceSquaredTo(me) * 1.0/Const.disToLine(me, rc.senseEnemyHQLocation(), m);
     }
 
