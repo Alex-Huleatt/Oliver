@@ -15,7 +15,7 @@ import battlecode.common.Team;
 import battlecode.common.Upgrade;
 import team016.Comm.RadioController;
 import team016.Const;
-import team016.Moods.MapQueue;
+import team016.MapQueue;
 import team016.Timer;
 
 /**
