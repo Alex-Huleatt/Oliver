@@ -269,6 +269,7 @@ public class Const {
         return new MapLocation(l>>8,l&255);
     }
     public static int locToInt(MapLocation m) {
+        if (m==null) return -1;
         return m.x<<8|m.y;
     }
 }

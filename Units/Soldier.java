@@ -9,7 +9,6 @@ import team016.Moods.Zerg.Rushing;
 /* Should probably comment or something */
 
 public class Soldier extends Unit {
-    RobotController rc;
     Mood emotion;
     public Soldier(RobotController bot) {
         super(bot);
@@ -20,8 +19,7 @@ public class Soldier extends Unit {
     public void run() throws Exception {
         Mood trans;
         while (true) {
-            if (emotion==null) continue;
-            this.emotion=((trans=emotion.swing())==null)?emotion:trans;
+            emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.setIndicatorString(0, emotion.toString());
             emotion.act(); //Perform
             emotion.report(); //Generate and send data to StratController.

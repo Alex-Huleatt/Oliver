@@ -15,6 +15,8 @@ import battlecode.common.Team;
 import battlecode.common.Upgrade;
 import team016.Comm.RadioController;
 import team016.Const;
+import team016.Moods.MapQueue;
+import team016.Timer;
 
 /**
  * This should be the core of everything. HQ will have this instance, this
@@ -30,6 +32,13 @@ public class StratController {
     public StratType curStrat;
     public StratType hqStrat;
 
+    public MapLocation[] allEncamps;
+    int range = 1;
+    int encamps_index;
+    MapQueue mq;
+
+    MapLocation me;
+
     public interface Datum {
 
         public boolean on() throws Exception;
@@ -39,7 +48,7 @@ public class StratController {
     public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke,
             shouldDefuse, shouldReactor, shouldVision, needSupply;
 
-    public StratController(RobotController rct) {
+    public StratController(RobotController rct) throws Exception {
         this.rc = rct;
         this.curStrat = StratType.NO_STRAT;
         closeHQs = new Datum() {
@@ -94,16 +103,27 @@ public class StratController {
             }
 
         };
-        radC = new RadioController(rc);
         needSupply = new Datum() {
             public boolean on() throws Exception {
                 if (Clock.getRoundNum() == 0) {
                     return true;
                 }
-                return radC.read(RadioController.REPORT_BLOCK, RadioController.SUPPLY_COUNT_OFFSET, Clock.getRoundNum() - 1) < 1;
+                return radC.read(RadioController.REPORT_BLOCK, 
+                        RadioController.SUPPLY_COUNT_OFFSET, 
+                        Clock.getRoundNum() - 1) < 1 && 
+                        rc.getTeamPower() > 
+                        GameConstants.CAPTURE_POWER_COST*(2+rc.senseAlliedEncampmentSquares().length);
+                
             }
 
         };
+        radC = new RadioController(rc);
+        
+        me = rc.senseHQLocation();
+        allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
+        encamps_index = 0;
+        mq = new MapQueue();
+        
     }
 
     public void majorStrat() throws Exception {
@@ -160,18 +180,26 @@ public class StratController {
         if (needSupply.on()) {
             int sup = findGoodSupplySquare();
             if (sup != -1) {
+                //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
                 radC.write(RadioController.REPORT_BLOCK,
-                        RadioController.SUPPLY_REQUEST_OFFSET, 
-                        1, 
+                        RadioController.SUPPLY_REQUEST_OFFSET,
+                        1,
                         Clock.getRoundNum());
-                
+                radC.write(RadioController.REPORT_BLOCK,
+                        RadioController.SUPPLY_SQUARE_POSN,
+                        sup,
+                        Clock.getRoundNum());
 
+            } else {
+                while (encamps_index>=allEncamps.length) {
+                    range*=2;
+                    allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
+                    encamps_index=0;
+                }
             }
         }
-        radC.write(RadioController.REPORT_BLOCK,
-                        RadioController.SUPPLY_SQUARE_POSN, 
-                        findGoodSupplySquare(), 
-                        Clock.getRoundNum());
+
+        //System.out.println(Const.intToLoc(sqr));
     }
 
     /**
@@ -189,7 +217,7 @@ public class StratController {
      */
     public void encamp() throws Exception {
         //rc.senseAllEncampmentSquares();
-        MapLocation[] encamps = rc.senseAllEncampmentSquares();
+        //MapLocation[] encamps = rc.senseAllEncampmentSquares();
 
     }
 
@@ -197,21 +225,18 @@ public class StratController {
      * TODO*
      */
     private int findGoodSupplySquare() throws Exception {
-        MapLocation me = rc.getLocation();
-        MapLocation[] encamps = rc.senseEncampmentSquares(me, 100000, Team.NEUTRAL);
-        if (encamps.length == 0) {
-            return -1;
+        Timer t = new Timer();
+        t.start();
+        for (int i = encamps_index; i < encamps_index + 20 && i < allEncamps.length; i++) {
+            mq.add(allEncamps[i], (float) supplyHeuristic(allEncamps[i]));
         }
-        MapLocation m = encamps[0];
-        int minDis = me.distanceSquaredTo(m);
-        for (MapLocation t : encamps) {
-            int dt = me.distanceSquaredTo(t);
-            if (minDis>dt && dt > 1) {
-                m=t;
-                minDis=dt;
-            }
-        }
-        return Const.locToInt(m);
+        t.stop();
+        encamps_index += 10;
+        return Const.locToInt(mq.pop());
+    }
+
+    private double supplyHeuristic(MapLocation m) {
+        return .5 * m.distanceSquaredTo(me) * 1.0/Const.disToLine(me, rc.senseEnemyHQLocation(), m);
     }
 
     /**

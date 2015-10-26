@@ -18,4 +18,9 @@ public class Supplier extends Unit  {
         super(rc);
     }
     
+    @Override
+    public void run() {
+        rc.yield();
+    }
+    
 }

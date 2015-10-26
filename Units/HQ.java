@@ -15,6 +15,7 @@ import battlecode.common.Upgrade;
 import team016.Comm.RadioController;
 import team016.Strat.StratController;
 import team016.Strat.StratType;
+import team016.Timer;
 
 /* Should probably comment or something */
 public class HQ extends Unit {
@@ -23,7 +24,8 @@ public class HQ extends Unit {
     MapLocation me;
     Mood emotion;
     public StratController sc;
-    public HQ(RobotController rc) {
+
+    public HQ(RobotController rc) throws Exception {
         super(rc);
         this.team = rc.getTeam();
         me = rc.getLocation();
@@ -34,15 +36,19 @@ public class HQ extends Unit {
     @Override
     public void run() throws Exception {
         Mood trans;
+        Timer t = new Timer();
+
         while (true) {
+            
             sc.majorStrat();
             sc.minorStrat();
             sc.setHQStrat();
-            this.emotion=((trans=emotion.swing())==null)?emotion:trans;
+            
+            this.emotion = ((trans = emotion.swing()) == null) ? emotion : trans;
             emotion.act();
             rc.yield();
         }
-        
+
     }
 
 }

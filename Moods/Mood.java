@@ -66,6 +66,14 @@ public abstract class Mood {
         if (st == null) {
             return null;
         }
+        int supply_need = radC.read(RadioController.REPORT_BLOCK,
+                RadioController.SUPPLY_REQUEST_OFFSET, Clock.getRoundNum());
+        //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
+        boolean needSupply = supply_need == 1;
+
+        if (needSupply) {
+            return new Helpful((Soldier) u);
+        }
         if (st != lastStrat) {
             lastStrat = st;
             Mood newMood = null;
@@ -85,13 +93,7 @@ public abstract class Mood {
             }
             return newMood;
         }
-        
-        boolean needSupply = radC.read(RadioController.REPORT_BLOCK, 
-                RadioController.SUPPLY_REQUEST_OFFSET, Clock.getRoundNum())==1;
-        
-        if (needSupply) {
-            return new Helpful((Soldier) u);
-        }
+
         return null;
     }
 
@@ -158,7 +160,7 @@ public abstract class Mood {
         if (mining && (Const.locOnLine(start, end, me) && disToGoal < closest)) {
             mining = false;
         }
-        if (disToGoal ==0) {
+        if (disToGoal == 0) {
             // you did it! now what?
             return;
         }

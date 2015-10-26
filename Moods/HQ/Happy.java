@@ -40,14 +40,10 @@ public class Happy extends Mood {
     @Override
     public void act() throws Exception {
         StratType mahStrat = ((HQ) u).sc.hqStrat;
-        end:
-        while (rc.isActive()) {
+        if (rc.isActive()) {
 
             if (mahStrat == StratType.RUSH_DEFUSION) {
                 rc.researchUpgrade(Upgrade.DEFUSION);
-            }
-            if (mahStrat == StratType.RUSH_REACTOR) {
-                rc.researchUpgrade(Upgrade.FUSION);
             }
 
             if (rc.isActive()) {
@@ -57,12 +53,7 @@ public class Happy extends Mood {
                     rc.spawn(dir);
                 }
             }
-            if (rc.isActive()) {
-                simpleAttack();
-            }
         }
-
-        rc.yield();
     }
 
     @Override

@@ -43,6 +43,10 @@ public class Timer {
         }
     }
 
+    public void restart() {
+        stopped=true;
+        elaps=0;
+    }
     @Override
     public String toString() {
         return "BC:"+elaps;
