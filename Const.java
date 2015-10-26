@@ -1,6 +1,8 @@
 package team016;
 
 import battlecode.common.*;
+import static team016.Const.intToLoc;
+import static team016.Const.validLoc;
 
 /* Should probably comment or something */
 public class Const {
@@ -33,7 +35,7 @@ public class Const {
         Direction.SOUTH_WEST, Direction.WEST, Direction.NORTH_WEST};
 
     public static RobotInfo getClosest(MapLocation loc, RobotInfo[] obs) {
-        if (obs.length ==0 ) {
+        if (obs.length == 0) {
             return null;
         }
         int min = loc.distanceSquaredTo(obs[0].location);
@@ -47,23 +49,25 @@ public class Const {
         }
         return obs[mindex];
     }
-    
-    public static RobotInfo getClosest(MapLocation loc, Robot[] bots, RobotController rc) throws Exception{
-        
+
+    public static RobotInfo getClosest(MapLocation loc, Robot[] bots, RobotController rc) throws Exception {
+
         return getClosest(loc, getInfos(rc, bots));
     }
-    
-    public static RobotInfo[] getInfos(RobotController rc, Robot[] bots) throws Exception{
-        if (bots == null || bots.length == 0) return new RobotInfo[]{};
-        
+
+    public static RobotInfo[] getInfos(RobotController rc, Robot[] bots) throws Exception {
+        if (bots == null || bots.length == 0) {
+            return new RobotInfo[]{};
+        }
+
         RobotInfo[] info = new RobotInfo[bots.length];
         for (int i = 0; i < bots.length; i++) {
             info[i] = rc.senseRobotInfo(bots[i]);
         }
         return info;
     }
-    
-    public static int getThreat(RobotController rc, Robot[] bots) throws Exception{
+
+    public static int getThreat(RobotController rc, Robot[] bots) throws Exception {
         RobotInfo[] infos = getInfos(rc, bots);
         int total = 0;
         for (RobotInfo info : infos) {
@@ -71,21 +75,24 @@ public class Const {
         }
         return total;
     }
-    
+
     public static int getThreatLevel(RobotInfo info) {
-        switch(info.type){
-            case SOLDIER: return 1;
-            case ARTILLERY: return 4;
-            default: return 0;
+        switch (info.type) {
+            case SOLDIER:
+                return 1;
+            case ARTILLERY:
+                return 4;
+            default:
+                return 0;
         }
     }
-    
+
     /**
-     * Finds an direction that is safe from enemy attack, returns the safe direction
-     * that is closest to the goal, or null when no move should occur.
-     *  
-     * Note: the direction opposite to the goal is only returned when the rc's current 
-     * location is unsafe.
+     * Finds an direction that is safe from enemy attack, returns the safe
+     * direction that is closest to the goal, or null when no move should occur.
+     *
+     * Note: the direction opposite to the goal is only returned when the rc's
+     * current location is unsafe.
      */
     public static Direction findSafeLoc(RobotController rc, Robot[] enemies, Direction goal, boolean ignoreMines) throws Exception {
         MapLocation me = rc.getLocation();
@@ -96,31 +103,37 @@ public class Const {
         int dir = directionToInt(goal);
         Direction check = Direction.NORTH;
         for (int i = 1; i <= 3; i++) {
-            check = directions[(dir+i)%8];
+            check = directions[(dir + i) % 8];
             if (rc.canMove(check) && isSafeLoc(me.add(check), infos)) {
-                if (ignoreMines || !isBadMine(rc, me.add(check))) return check;
+                if (ignoreMines || !isBadMine(rc, me.add(check))) {
+                    return check;
+                }
             }
-            check = directions[((dir-i)+8)%8];
+            check = directions[((dir - i) + 8) % 8];
             if (rc.canMove(check) && isSafeLoc(me.add(check), infos)) {
-                if (ignoreMines || !isBadMine(rc, me.add(check))) return check;
+                if (ignoreMines || !isBadMine(rc, me.add(check))) {
+                    return check;
+                }
             }
         }
         if (isSafeLoc(me, infos)) {
             return null;
         }
         if (rc.canMove(goal.opposite()) && isSafeLoc(me.add(goal.opposite()), infos)) {
-            if (ignoreMines || !isBadMine(rc, me.add(check))) return goal.opposite();
+            if (ignoreMines || !isBadMine(rc, me.add(check))) {
+                return goal.opposite();
+            }
         }
         return null;
     }
 
-    public static boolean isSafeLoc(RobotController rc, MapLocation loc, Robot[] enemies) throws Exception{
+    public static boolean isSafeLoc(RobotController rc, MapLocation loc, Robot[] enemies) throws Exception {
         RobotInfo[] infos = getInfos(rc, enemies);
         return isSafeLoc(loc, infos);
     }
-    
+
     public static boolean isSafeLoc(MapLocation loc, RobotInfo[] infos) {
-        for (RobotInfo info: infos) {
+        for (RobotInfo info : infos) {
             if (getThreatLevel(info) > 0 && loc.distanceSquaredTo(info.location) < 2) {
                 return false;
             }
@@ -140,11 +153,11 @@ public class Const {
         System.arraycopy(r, 0, ret, 0, ret.length);
         return ret;
     }
-    
+
     public static Robot[] robotFilter(GameObject[] obs, Team team) {
         Robot[] r = new Robot[obs.length];
         int count = 0;
-        
+
         for (GameObject ob : obs) {
             if (ob instanceof Robot && ob.getTeam() == team) {
                 r[count++] = (Robot) ob;
@@ -226,7 +239,7 @@ public class Const {
         }
         return false;
     }
-    
+
     public static boolean isBadMine(RobotController rc, MapLocation loc) {
         Team mine = rc.senseMine(loc);
         if (mine != null && mine != rc.getTeam()) {
@@ -266,10 +279,21 @@ public class Const {
     }
 
     public static MapLocation intToLoc(int l) {
-        return new MapLocation(l>>8,l&255);
+        return new MapLocation(l >> 8, l & 255);
     }
+
     public static int locToInt(MapLocation m) {
-        if (m==null) return -1;
-        return m.x<<8|m.y;
+        if (m == null) {
+            return -1;
+        }
+        return m.x << 8 | m.y;
+    }
+
+    public static boolean validLoc(MapLocation m) {
+        return m.x > 0 && m.x < 100 && m.y > 0 && m.y < 100;
+    }
+
+    public static boolean validLoc(int i) {
+        return validLoc(intToLoc(i));
     }
 }

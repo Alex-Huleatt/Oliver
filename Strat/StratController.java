@@ -196,6 +196,7 @@ public class StratController {
                     allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
                     encamps_index=0;
                 }
+                
             }
         }
 

@@ -62,9 +62,10 @@ public class Helpful extends Mood {
             radC.write(RadioController.REPORT_BLOCK, RadioController.SUPPLY_REQUEST_OFFSET, 0, Clock.getRoundNum());
         }
         //report my life
-        radC.unitReport(RadioController.SUPPLY_COUNT_OFFSET);
+        if (Const.validLoc(goal)) radC.unitReport(RadioController.SUPPLY_COUNT_OFFSET);
 
         if (goal != null) {
+            
             MapLocation me = rc.getLocation();
             if (rc.isActive()) {
                 if (me.distanceSquaredTo(goal) == 0 && rc.senseEncampmentSquare(goal)) {
