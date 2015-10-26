@@ -48,10 +48,14 @@ public class Happy extends Mood {
 
             if (rc.isActive()) {
                 // Spawn a soldier
-                Direction dir = rc.getLocation().directionTo(rc.senseEnemyHQLocation());
-                if (rc.canMove(dir)) {
-                    rc.spawn(dir);
+                for (int i = 0; i < 8; i++) {
+                    Direction dir = Const.directions[i];
+                    if (rc.canMove(dir)) {
+                        rc.spawn(dir);
+                        break;
+                    }
                 }
+
             }
         }
     }
