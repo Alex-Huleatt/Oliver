@@ -71,7 +71,7 @@ public abstract class Mood {
         //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
         boolean needSupply = supply_need == 1;
 
-        if (needSupply) {
+        if (needSupply && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 5) {
             return new Helpful((Soldier) u);
         }
         if (st != lastStrat) {
