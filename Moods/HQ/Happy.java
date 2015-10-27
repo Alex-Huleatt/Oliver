@@ -50,7 +50,7 @@ public class Happy extends Mood {
                 // Spawn a soldier
                 for (int i = 0; i < 8; i++) {
                     Direction dir = Const.directions[i];
-                    if (rc.canMove(dir)) {
+                    if (rc.canMove(dir) && !Const.isBadMine(rc, rc.getLocation().add(dir))) {
                         rc.spawn(dir);
                         break;
                     }

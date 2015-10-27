@@ -30,6 +30,8 @@ import team016.Units.Unit;
  */
 public abstract class Mood {
 
+    public static int MAX_IDEA_DIS = 20;
+
     public Unit u;
     public RobotController rc;
     public MapLocation enemyHQ;
@@ -37,6 +39,7 @@ public abstract class Mood {
     public Robot[] allies;
     public Team team;
     public RadioController radC;
+    public MapLocation me;
 
     MapLocation start;
     MapLocation end;
@@ -57,6 +60,10 @@ public abstract class Mood {
         this.radC = new RadioController(rc);
     }
 
+    public void updateVars() {
+        me = rc.getLocation();
+    }
+
     public void act() throws Exception {
 
     }
@@ -66,8 +73,7 @@ public abstract class Mood {
         if (st == null) {
             return null;
         }
-        int supply_need = radC.read(RadioController.REPORT_BLOCK,
-                RadioController.SUPPLY_REQUEST_OFFSET, Clock.getRoundNum());
+        int supply_need = radC.read("SUPPLY_REQUEST_OFFSET", Clock.getRoundNum());
         //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
         boolean needSupply = supply_need == 1;
 
@@ -391,4 +397,6 @@ public abstract class Mood {
         //my health?
         //
     }
+
+
 }

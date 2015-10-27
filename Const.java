@@ -274,6 +274,9 @@ public class Const {
         return isObstacle(rc, rc.getLocation().add(dir));
     }
 
+    public static boolean isObstacle(RobotController rc, int dir) throws Exception {
+        return isObstacle(rc, directions[dir]);
+    }
     public static MapLocation midpoint(MapLocation start, MapLocation end) {
         return new MapLocation((start.x + end.x) / 2, (start.y + end.y) / 2);
     }

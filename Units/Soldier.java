@@ -21,6 +21,7 @@ public class Soldier extends Unit {
         while (true) {
             emotion=((trans=emotion.swing())==null)?emotion:trans;
             rc.setIndicatorString(0, emotion.toString());
+            emotion.updateVars();
             emotion.act(); //Perform
             emotion.report(); //Generate and send data to StratController.
             rc.yield();

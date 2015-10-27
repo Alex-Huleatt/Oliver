@@ -11,6 +11,7 @@ import battlecode.common.GameConstants;
 import battlecode.common.MapLocation;
 import battlecode.common.RobotController;
 import battlecode.common.Team;
+import team016.Pair;
 import team016.Strat.MissionType;
 import team016.Strat.StratType;
 
@@ -23,31 +24,15 @@ public class RadioController {
     RobotController rc;
 
     public static final int MAX_MISSIONS = 5;
-    public static final int REPORT_ALIVE_OFFSET = 2;
-
-    //block zero shenanigans
-    public static final int HQ_BLOCK = 0;
-    public static final int STRAT_OFFSET = 1;
-    public static final int HQ_STRAT_OFFSET = 2;
-
-    //block one shenanigans
-    public static final int REPORT_BLOCK = 1;
     
-    public static final int SUPPLY_COUNT_OFFSET = 2;
-    public static final int SUPPLY_REQUEST_OFFSET = 3;
-    public static final int SUPPLY_SQUARE_POSN = 4;
 
-    //mission block
-    public static final int MISSION_BLOCK = 2;
-    public static final int REQUESTED_SOLDIERS_OFFSET = 0;
-   
 
     public RadioController(RobotController rc) {
         this.rc = rc;
     }
 
     private static int getMask(int round_num, int block) {
-        return ((int) xorshiftstar(round_num+block)) << 24;
+        return ((int) xorshiftstar(round_num + block)) << 24;
     }
 
     static long xorshiftstar(int x) {
@@ -67,12 +52,12 @@ public class RadioController {
     }
 
     private static int signMessage(int message, int round_num, int block) {
-        return message | getMask(round_num,block);
+        return message | getMask(round_num, block);
     }
 
-    private static boolean isSigned(int message, int round_num,int block) {
+    private static boolean isSigned(int message, int round_num, int block) {
         //System.out.println(message + " " + (message&MASK) + " " + MASK);\
-        int mask = getMask(round_num,block);
+        int mask = getMask(round_num, block);
         return (message & mask) == mask;
     }
 
@@ -80,16 +65,24 @@ public class RadioController {
         return message ^ getMask(round_num, block);
     }
 
-    /**
-     * HERE BE PUBLIC FUNCTIONS
-     */
+    public void unitReport(String ch) throws Exception {
+        int rnd = Clock.getRoundNum();
+        int old = read(ch,rnd);
+        if (old == -1) {
+            write(ch,1,rnd);
+        }
+        write(ch,old+1,rnd);
+        
+    }
+
     /**
      *
      * @param round_num
      * @return @throws Exception
      */
     public StratType curStrat(int round_num) throws Exception {
-        int strat_index = read(HQ_BLOCK, RadioController.STRAT_OFFSET, round_num);
+        final Pair<Integer,Integer> p = CConsts.c("GLOBAL_STRAT");
+        int strat_index = read(p.a, p.b, round_num);
         if (strat_index <= 0 || strat_index > StratType.values().length) {
             return null;
         }
@@ -117,17 +110,6 @@ public class RadioController {
     public void clearBlock(int block_num, int block_size) {
 
     }
-
-    /**
-     * Reports the existence of a unit, by type. Writes to the REPORT_BLOCK
-     * @param offset Which unit type to report
-     * @throws Exception 
-     */
-    public void unitReport(int offset) throws Exception {
-        int old = read(REPORT_BLOCK, offset, Clock.getRoundNum());
-        if (old == -1) old = 0;
-        write(REPORT_BLOCK, offset, old+1, Clock.getRoundNum());
-    }
     
     public int[] readBlock(int block_num, int block_size, int round_num) throws Exception {
         int[] block = new int[block_size];
@@ -137,7 +119,27 @@ public class RadioController {
         return block;
     }
 
-    public int read(int block_num, int offset, int round_num) throws Exception {
+    private int read(int block_num, int offset) throws Exception {
+        int round_num = Clock.getRoundNum();
+        int chan = getChannel(block_num, offset, round_num);
+        int raw = rc.readBroadcast(chan);
+        //System.out.println("Read:" + chan + ", " + raw);
+        if (!isSigned(raw, round_num, block_num)) {
+
+            return -1;
+        } else {
+            return unsign(raw, round_num, block_num);
+        }
+
+    }
+
+    public int read(Pair<Integer,Integer> p, int round_num) throws Exception {
+        return read(p.a,p.b,round_num);
+    }
+    public void write(Pair<Integer,Integer> p, int message,int round_num) throws Exception {
+        write(p.a,p.b,message, round_num);
+    }
+    private int read(int block_num, int offset, int round_num) throws Exception {
 
         int chan = getChannel(block_num, offset, round_num);
         int raw = rc.readBroadcast(chan);
@@ -150,26 +152,45 @@ public class RadioController {
         }
 
     }
-    
+
     public int getMask(int[] arrrrrrr) {
         if (arrrrrrr.length == 0) {
             return 0;
         }
         int n = arrrrrrr[0];
-        for (int i = 1; i < arrrrrrr.length; i++) n&=arrrrrrr[i];
+        for (int i = 1; i < arrrrrrr.length; i++) {
+            n &= arrrrrrr[i];
+        }
         return n;
     }
 
     public int getChannel(int block_num, int offset, int round_num) {
         int base = getBaseChannel(block_num, round_num);
-        
+
         return (base + offset) % GameConstants.BROADCAST_MAX_CHANNELS;
     }
 
-    public void write(int block_num, int offset, int message, int round_num) throws Exception {
+    private void write(int block_num, int offset, int message, int round_num) throws Exception {
         int signed = signMessage(message, block_num, round_num);
         int chan = getChannel(block_num, offset, round_num);
         rc.broadcast(chan, signed);
         //System.out.println("Write:" + chan + ", " + signed);
     }
+
+    public boolean getUsed(RobotController rc) {
+        
+        return false;
+    }
+    
+    public void write(String ch, int message, int round_num) throws Exception {
+        write(CConsts.c(ch),message,round_num);
+    }
+    
+    public int read(String ch, int round_num) throws Exception {
+        return read(CConsts.c(ch),round_num);
+    }
+    
+//    public int read(Pair<Integer,Integer> p, int round_num) throws Exception {
+//        return read(p.a,p.b,round_num);
+//    }
 }

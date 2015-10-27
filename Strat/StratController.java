@@ -108,8 +108,7 @@ public class StratController {
                 if (Clock.getRoundNum() == 0) {
                     return true;
                 }
-                return radC.read(RadioController.REPORT_BLOCK, 
-                        RadioController.SUPPLY_COUNT_OFFSET, 
+                return radC.read("SUPPLY_COUNT_OFFSET", 
                         Clock.getRoundNum() - 1) < 1 && 
                         rc.getTeamPower() > 
                         GameConstants.CAPTURE_POWER_COST*(2+rc.senseAlliedEncampmentSquares().length);
@@ -154,16 +153,16 @@ public class StratController {
     }
 
     private void sendStrat(StratType st) throws Exception {
-        radC.write(RadioController.HQ_BLOCK, RadioController.STRAT_OFFSET, st.ordinal(), Clock.getRoundNum());
+        radC.write("GLOBAL_STRAT", st.ordinal(), Clock.getRoundNum());
     }
 
     public void setHQStrat() throws Exception {
         StratType toStrat = StratType.NO_STRAT;
         //lbl:
         {
-            if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
-                toStrat = StratType.RUSH_DEFUSION;
-            }
+//            if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
+//                toStrat = StratType.RUSH_DEFUSION;
+//            }
 
 //            if (shouldReactor.on() && !spookedHQ.on() && earlyGame.on()) {
 //                toStrat = StratType.RUSH_REACTOR;
@@ -181,12 +180,10 @@ public class StratController {
             int sup = findGoodSupplySquare();
             if (sup != -1) {
                 //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
-                radC.write(RadioController.REPORT_BLOCK,
-                        RadioController.SUPPLY_REQUEST_OFFSET,
+                radC.write("SUPPLY_REQUEST_OFFSET",
                         1,
                         Clock.getRoundNum());
-                radC.write(RadioController.REPORT_BLOCK,
-                        RadioController.SUPPLY_SQUARE_POSN,
+                radC.write("SUPPLY_SQUARE_POSN",
                         sup,
                         Clock.getRoundNum());
 
@@ -229,7 +226,8 @@ public class StratController {
         Timer t = new Timer();
         t.start();
         for (int i = encamps_index; i < encamps_index + 20 && i < allEncamps.length; i++) {
-            mq.add(allEncamps[i], (float) supplyHeuristic(allEncamps[i]));
+            float h = (float) supplyHeuristic(allEncamps[i]);
+            if (h != -1) mq.add(allEncamps[i], h);
         }
         t.stop();
         encamps_index += 10;
@@ -237,8 +235,8 @@ public class StratController {
     }
 
     private double supplyHeuristic(MapLocation m) {
-        if (m.distanceSquaredTo(rc.getLocation())<2) return 10000;
-        return .5 * m.distanceSquaredTo(me) * 1.0/Const.disToLine(me, rc.senseEnemyHQLocation(), m);
+        if (m.distanceSquaredTo(rc.getLocation())<2) return -1;
+        return .5 * m.distanceSquaredTo(me) * 1.0/(1+Const.disToLine(me, rc.senseEnemyHQLocation(), m));
     }
 
     /**

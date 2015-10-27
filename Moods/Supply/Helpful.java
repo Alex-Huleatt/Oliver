@@ -40,8 +40,7 @@ public class Helpful extends Mood {
     }
 
     public final void findGoal() throws Exception {
-        goal = Const.intToLoc(radC.read(RadioController.REPORT_BLOCK,
-                RadioController.SUPPLY_SQUARE_POSN,
+        goal = Const.intToLoc(radC.read("SUPPLY_SQUARE_POSN",
                 Clock.getRoundNum()));
         acted = false;
     }
@@ -59,10 +58,10 @@ public class Helpful extends Mood {
 
         if (!acted) {
             acted = true;
-            radC.write(RadioController.REPORT_BLOCK, RadioController.SUPPLY_REQUEST_OFFSET, 0, Clock.getRoundNum());
+            radC.write("SUPPLY_REQUEST_OFFSET", 0, Clock.getRoundNum());
         }
         //report my life
-        if (Const.validLoc(goal)) radC.unitReport(RadioController.SUPPLY_COUNT_OFFSET);
+        if (Const.validLoc(goal)) radC.unitReport("SUPPLY_COUNT_OFFSET");
 
         if (goal != null) {
             
