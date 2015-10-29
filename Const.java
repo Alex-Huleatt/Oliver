@@ -224,22 +224,6 @@ public class Const {
         return false;
     }
 
-    public static boolean isObstacle(RobotController rc, MapLocation loc) throws Exception {
-        TerrainTile tt = rc.senseTerrainTile(loc);
-        if (tt == TerrainTile.VOID || tt == TerrainTile.OFF_MAP) {
-            return true;
-        }
-        Team mine = rc.senseMine(loc);
-        if (mine != null && mine != rc.getTeam()) {
-            return true;
-        }
-        if (rc.canSenseSquare(loc)) {
-            GameObject obj = rc.senseObjectAtLocation(loc);
-            return (obj != null);
-        }
-        return false;
-    }
-
     public static boolean isBadMine(RobotController rc, MapLocation loc) {
         Team mine = rc.senseMine(loc);
         if (mine != null && mine != rc.getTeam()) {
@@ -274,8 +258,32 @@ public class Const {
         return isObstacle(rc, rc.getLocation().add(dir));
     }
 
+    public static boolean isObstacle(RobotController rc, MapLocation loc) throws Exception {
+        TerrainTile tt = rc.senseTerrainTile(loc);
+        if (tt == TerrainTile.VOID || tt == TerrainTile.OFF_MAP) {
+            return true;
+        }
+        Team mine = rc.senseMine(loc);
+        if (mine != null && mine != rc.getTeam()) {
+            return true;
+        }
+        if (rc.canSenseSquare(loc)) {
+            GameObject obj = rc.senseObjectAtLocation(loc);
+            return (obj != null);
+        }
+        return false;
+    }
+
     public static boolean isObstacle(RobotController rc, int dir) throws Exception {
         return isObstacle(rc, directions[dir]);
+    }
+
+    public static boolean isUnit(RobotController rc, MapLocation loc) throws Exception {
+        if (rc.canSenseSquare(loc)) {
+            GameObject obj = rc.senseObjectAtLocation(loc);
+            return (obj != null);
+        }
+        return false;
     }
     public static MapLocation midpoint(MapLocation start, MapLocation end) {
         return new MapLocation((start.x + end.x) / 2, (start.y + end.y) / 2);

@@ -371,6 +371,23 @@ public abstract class Mood {
         return true;
     }
 
+    public boolean simpleMove(MapLocation goal) throws Exception {
+        Direction d = me.directionTo(goal);
+        MapLocation next = me.add(d);
+        if (rc.isActive()) {
+            if (!Const.isObstacle(rc, next)) {
+                move(d);
+                return true;
+            }
+            Team mine = rc.senseMine(next);
+            if (mine == team.opponent() || mine == Team.NEUTRAL) {
+                rc.defuseMine(next);
+                return true;
+            }
+        }
+        return false;
+    }
+
     protected void simpleAttack() throws Exception {
         Robot[] enemies = Const.getEnemies(rc,
                 RobotType.HQ.attackRadiusMaxSquared);
@@ -397,6 +414,5 @@ public abstract class Mood {
         //my health?
         //
     }
-
 
 }

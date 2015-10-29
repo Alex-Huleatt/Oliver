@@ -3,29 +3,30 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package team016.Comm;
+package team016;
 
-import team016.Pair;
 
 /**
  *
  * @author alexhuleatt
  */
-public enum CConsts {
+public enum Consts {
 
+    /**
+     * These are radio consts
+     */
     HQ_BLOCK,
     REPORT_BLOCK,
     SOLDIER_BLOCK,
     MISSION_BLOCK,
-    
     IDEA_SIZE(4);
     
     public final int v;
-    CConsts() {
+    Consts() {
         v=0;
     }
-    CConsts(int o) {
-        this.v=o;
+    Consts(int v) {
+        this.v=v;
     }
 
 
@@ -37,26 +38,38 @@ public enum CConsts {
         SUPPLY_COUNT_OFFSET(REPORT_BLOCK,1),
         SUPPLY_REQUEST_OFFSET(REPORT_BLOCK,2),
         SUPPLY_SQUARE_POSN(REPORT_BLOCK,3),
+        SUPPLY_REQUEST_NEW_POSN(REPORT_BLOCK,4),
         
         REQUESTED_SOLDIERS_OFFSET(MISSION_BLOCK,0),
         
-        SOLDIER_IDEA_SIZE(SOLDIER_BLOCK,0),
         SOLDIER_IDEA_OFFSET(SOLDIER_BLOCK,1),
         SOLDIER_POSN_OFFSET(SOLDIER_BLOCK,2),
         SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,3);
         
-        public CConsts c;
+        public Consts c;
         public int o;
-        Channel(CConsts c, int o) {
+        Channel(Consts c, int o) {
             this.c=c;
         }
     }
+    /**
+     * Get nth chunk of block.
+     * @param s channel name.
+     * @param sz blocksize
+     * @param num which block
+     * @return 
+     */
     public static Pair<Integer,Integer> c(String s, int sz, int num) {
         Pair<Integer,Integer> p = c(s);
         p.b+=sz*num;
         return p;
     }
     
+    /**
+     * Get Channel by name
+     * @param s
+     * @return 
+     */
     public static Pair<Integer,Integer> c(String s) {
         Channel c = Channel.valueOf(s);
         int block = c.c.ordinal();

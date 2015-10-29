@@ -62,21 +62,26 @@ public class Helpful extends Mood {
         }
         //report my life
         if (Const.validLoc(goal)) radC.unitReport("SUPPLY_COUNT_OFFSET");
-
+        if (goal.distanceSquaredTo(rc.senseHQLocation()) < 5) {
+            goal = null;
+            radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
+        }
         if (goal != null) {
-            
-            MapLocation me = rc.getLocation();
             if (rc.isActive()) {
                 if (me.distanceSquaredTo(goal) == 0 && rc.senseEncampmentSquare(goal)) {
                     rc.captureEncampment(RobotType.SUPPLIER);
                     return;
                 }
+                if (me.distanceSquaredTo(goal) < 5) {
+                    if (simpleMove(goal))return;
+                }
                 if (rc.canSenseSquare(goal)) {
                     GameObject g = rc.senseObjectAtLocation(goal);
                     if (g instanceof Robot) {
                         RobotInfo ri = rc.senseRobotInfo((Robot) g);
-                        if (ri.type == RobotType.SUPPLIER) {
-                            findGoal();
+                        if (ri.type == RobotType.SUPPLIER && ri.team==team) {
+                            goal=null;
+                            radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
                         }
                     }
                 }

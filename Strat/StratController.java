@@ -46,7 +46,7 @@ public class StratController {
 
     //this line is going to be long.
     public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke,
-            shouldDefuse, shouldReactor, shouldVision, needSupply;
+            shouldDefuse, shouldReactor, shouldVision, needSupply, needNewSupplyLoc;
 
     public StratController(RobotController rct) throws Exception {
         this.rc = rct;
@@ -108,21 +108,28 @@ public class StratController {
                 if (Clock.getRoundNum() == 0) {
                     return true;
                 }
-                return radC.read("SUPPLY_COUNT_OFFSET", 
-                        Clock.getRoundNum() - 1) < 1 && 
-                        rc.getTeamPower() > 
-                        GameConstants.CAPTURE_POWER_COST*(2+rc.senseAlliedEncampmentSquares().length);
-                
+                return radC.read("SUPPLY_COUNT_OFFSET",
+                        Clock.getRoundNum() - 1) < 1
+                        && rc.getTeamPower()
+                        > GameConstants.CAPTURE_POWER_COST * (2 + rc.senseAlliedEncampmentSquares().length);
+
+            }
+
+        };
+        needNewSupplyLoc = new Datum() {
+
+            public boolean on() throws Exception {
+                return 1 == radC.read("SUPPLY_REQUEST_NEW_POSN", Clock.getRoundNum() - 1);
             }
 
         };
         radC = new RadioController(rc);
-        
+
         me = rc.senseHQLocation();
         allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
         encamps_index = 0;
         mq = new MapQueue();
-        
+
     }
 
     public void majorStrat() throws Exception {
@@ -174,10 +181,19 @@ public class StratController {
 
     /**
      * TODO
+     *
+     * @throws java.lang.Exception
      */
     public void minorStrat() throws Exception {
+        int sup;
+        if (needNewSupplyLoc.on()) {
+            sup = findGoodSupplySquare();
+            radC.write("SUPPLY_SQUARE_POSN",
+                    sup,
+                    Clock.getRoundNum());
+        }
         if (needSupply.on()) {
-            int sup = findGoodSupplySquare();
+            sup = findGoodSupplySquare();
             if (sup != -1) {
                 //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
                 radC.write("SUPPLY_REQUEST_OFFSET",
@@ -188,12 +204,12 @@ public class StratController {
                         Clock.getRoundNum());
 
             } else {
-                while (encamps_index>=allEncamps.length) {
-                    range*=2;
+                while (encamps_index >= allEncamps.length) {
+                    range *= 2;
                     allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
-                    encamps_index=0;
+                    encamps_index = 0;
                 }
-                
+
             }
         }
 
@@ -211,7 +227,9 @@ public class StratController {
     }
 
     /**
-     * TODO*
+     * TODO
+     *
+     * @throws java.lang.Exception
      */
     public void encamp() throws Exception {
         //rc.senseAllEncampmentSquares();
@@ -227,16 +245,21 @@ public class StratController {
         t.start();
         for (int i = encamps_index; i < encamps_index + 20 && i < allEncamps.length; i++) {
             float h = (float) supplyHeuristic(allEncamps[i]);
-            if (h != -1) mq.add(allEncamps[i], h);
+            if (h != -1) {
+                mq.add(allEncamps[i], h);
+            }
         }
         t.stop();
         encamps_index += 10;
-        return Const.locToInt(mq.pop());
+        MapLocation m = mq.pop();
+        return Const.locToInt(m);
     }
 
     private double supplyHeuristic(MapLocation m) {
-        if (m.distanceSquaredTo(rc.getLocation())<2) return -1;
-        return .5 * m.distanceSquaredTo(me) * 1.0/(1+Const.disToLine(me, rc.senseEnemyHQLocation(), m));
+        if (m.distanceSquaredTo(rc.getLocation()) < 2) {
+            return -1;
+        }
+        return .5 * m.distanceSquaredTo(me) * 1.0 / (1 + Const.disToLine(me, rc.senseEnemyHQLocation(), m));
     }
 
     /**

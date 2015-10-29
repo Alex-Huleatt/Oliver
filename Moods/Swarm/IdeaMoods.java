@@ -7,7 +7,7 @@ package team016.Moods.Swarm;
 
 import battlecode.common.Clock;
 import battlecode.common.MapLocation;
-import team016.Comm.CConsts;
+import team016.Consts;
 import team016.Comm.RadioController;
 import team016.Const;
 import team016.Moods.Mood;
@@ -27,7 +27,7 @@ public abstract class IdeaMoods extends Mood {
     }
 
     private Idea getIdea(int num) throws Exception {
-        Pair<Integer,Integer> p = CConsts.c("SOLDIER_IDEA_OFFSET", CConsts.IDEA_SIZE.v, num);
+        Pair<Integer,Integer> p = Consts.c("SOLDIER_IDEA_OFFSET", Consts.IDEA_SIZE.v, num);
         
         int n = radC.read(p, Clock.getRoundNum());
         if (n == -1) {
@@ -37,7 +37,7 @@ public abstract class IdeaMoods extends Mood {
     }
 
     private MapLocation getIdeaLoc(int num) throws Exception {
-        Pair<Integer,Integer> p = CConsts.c("SOLDIER_POSN_OFFSET", CConsts.IDEA_SIZE.v, num);
+        Pair<Integer,Integer> p = Consts.c("SOLDIER_POSN_OFFSET", Consts.IDEA_SIZE.v, num);
         int n = radC.read(p,Clock.getRoundNum());
         if (n == -1) {
             return null;

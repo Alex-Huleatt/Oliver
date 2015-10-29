@@ -5,6 +5,7 @@
  */
 package team016.Comm;
 
+import team016.Consts;
 import battlecode.common.Clock;
 import battlecode.common.GameActionException;
 import battlecode.common.GameConstants;
@@ -23,7 +24,7 @@ public class RadioController {
 
     RobotController rc;
 
-    public static final int MAX_MISSIONS = 5;
+    
     
 
 
@@ -81,7 +82,7 @@ public class RadioController {
      * @return @throws Exception
      */
     public StratType curStrat(int round_num) throws Exception {
-        final Pair<Integer,Integer> p = CConsts.c("GLOBAL_STRAT");
+        final Pair<Integer,Integer> p = Consts.c("GLOBAL_STRAT");
         int strat_index = read(p.a, p.b, round_num);
         if (strat_index <= 0 || strat_index > StratType.values().length) {
             return null;
@@ -183,11 +184,11 @@ public class RadioController {
     }
     
     public void write(String ch, int message, int round_num) throws Exception {
-        write(CConsts.c(ch),message,round_num);
+        write(Consts.c(ch),message,round_num);
     }
     
     public int read(String ch, int round_num) throws Exception {
-        return read(CConsts.c(ch),round_num);
+        return read(Consts.c(ch),round_num);
     }
     
 //    public int read(Pair<Integer,Integer> p, int round_num) throws Exception {
