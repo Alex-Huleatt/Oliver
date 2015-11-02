@@ -32,11 +32,14 @@ public class Helpful extends Mood {
     MapLocation goal;
     boolean acted;
     final static MapLocation nullGoal = new MapLocation(-1, 255);
+    boolean encamping;
+    RobotType encType;
 
     public Helpful(Soldier s) throws Exception {
         super(s);
         findGoal();
         acted = false;
+        encamping = false;
     }
 
     public final void findGoal() throws Exception {
@@ -47,7 +50,7 @@ public class Helpful extends Mood {
 
     @Override
     public Mood swing() throws Exception {
-        if (goal.equals(nullGoal)) {
+        if (goal == null || goal.equals(nullGoal)) {
             findGoal();
         }
         return null;
@@ -55,32 +58,61 @@ public class Helpful extends Mood {
 
     @Override
     public void act() throws Exception {
-
+        if (encamping) {
+            if (Const.validLoc(goal)) {
+                if (encType==RobotType.SUPPLIER)radC.unitReport("SUPPLY_COUNT_OFFSET");
+                if (encType==RobotType.GENERATOR)radC.unitReport("GEN_COUNT_OFFSET");
+            }
+            return;
+        }
         if (!acted) {
             acted = true;
             radC.write("SUPPLY_REQUEST_OFFSET", 0, Clock.getRoundNum());
         }
         //report my life
-        if (Const.validLoc(goal)) radC.unitReport("SUPPLY_COUNT_OFFSET");
+        if (Const.validLoc(goal)) {
+            radC.unitReport("SUPPLY_COUNT_OFFSET");
+            radC.unitReport("GEN_COUNT_OFFSET");
+        } else {
+            goal = null;
+            return;
+        }
         if (goal.distanceSquaredTo(rc.senseHQLocation()) < 5) {
             goal = null;
             radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
         }
         if (goal != null) {
             if (rc.isActive()) {
-                if (me.distanceSquaredTo(goal) == 0 && rc.senseEncampmentSquare(goal)) {
-                    rc.captureEncampment(RobotType.SUPPLIER);
+                if (me.distanceSquaredTo(goal) == 0
+                        && rc.senseEncampmentSquare(goal)
+                        && rc.getTeamPower() > GameConstants.CAPTURE_POWER_COST * (1.5 + rc.senseAlliedEncampmentSquares().length)) {
+                    try {
+                        encamping = true;
+                        int supply_cnt = radC.read("SUPPLY_COUNT_OFFSET", Clock.getRoundNum() - 1);
+                        int gen_cnt = radC.read("GEN_COUNT_OFFSET", Clock.getRoundNum() - 1);
+                        if (supply_cnt < gen_cnt-1 && gen_cnt > 0) {
+                            
+                            encType = RobotType.SUPPLIER;
+                        } else {
+                            encType = RobotType.GENERATOR;
+                        }
+                        rc.captureEncampment(encType);
+                    } catch (Exception e) {
+                        encamping = false;
+                    }
                     return;
                 }
-                if (me.distanceSquaredTo(goal) < 5) {
-                    if (simpleMove(goal))return;
+                if (me.distanceSquaredTo(goal) < 12) {
+                    if (simpleMove(goal)) {
+                        return;
+                    }
                 }
                 if (rc.canSenseSquare(goal)) {
                     GameObject g = rc.senseObjectAtLocation(goal);
                     if (g instanceof Robot) {
                         RobotInfo ri = rc.senseRobotInfo((Robot) g);
-                        if (ri.type == RobotType.SUPPLIER && ri.team==team) {
-                            goal=null;
+                        if ((ri.type == RobotType.GENERATOR || ri.type == RobotType.SUPPLIER) && ri.team == team) {
+                            goal = null;
                             radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
                         }
                     }

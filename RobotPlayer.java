@@ -6,6 +6,7 @@ import battlecode.common.Direction;
 import battlecode.common.GameConstants;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
+import team016.Units.Generator;
 import team016.Units.Supplier;
 
 /**
@@ -28,6 +29,9 @@ public class RobotPlayer {
                     case SUPPLIER:
                         (new Supplier(rc)).run();
                         break;
+                    case GENERATOR:
+                        (new Generator(rc)).run();
+                        break;
                     default:
                         System.out.println("Unknown rc type: " + rc.getType());
                         rc.yield();
@@ -36,6 +40,7 @@ public class RobotPlayer {
             } catch (Exception e) {
                 rc.setIndicatorString(2, "ERROR!!");
                 e.printStackTrace();
+                System.out.println(e.toString());
             }
         }
     }

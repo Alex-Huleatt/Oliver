@@ -44,9 +44,10 @@ public class Happy extends Mood {
 
             if (mahStrat == StratType.RUSH_DEFUSION) {
                 rc.researchUpgrade(Upgrade.DEFUSION);
+                return;
             }
 
-            if (rc.isActive()) {
+            if (rc.getTeamPower()>100) {
                 // Spawn a soldier
                 for (int i = 0; i < 8; i++) {
                     Direction dir = Const.directions[i];

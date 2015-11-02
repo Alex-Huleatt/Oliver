@@ -7,14 +7,17 @@ package team016.Strat;
 
 import battlecode.common.Clock;
 import battlecode.common.GameConstants;
+import battlecode.common.GameObject;
 import battlecode.common.MapLocation;
 import battlecode.common.Robot;
 import battlecode.common.RobotController;
+import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
 import team016.Comm.RadioController;
 import team016.Const;
+import team016.Consts;
 import team016.MapQueue;
 import team016.Timer;
 
@@ -36,6 +39,11 @@ public class StratController {
     int range = 1;
     int encamps_index;
     MapQueue mq;
+
+    MapQueue enemyEncamps;
+    MapLocation curTarget;
+    int targetCD;
+    boolean validTarget;
 
     MapLocation me;
 
@@ -111,8 +119,7 @@ public class StratController {
                 return radC.read("SUPPLY_COUNT_OFFSET",
                         Clock.getRoundNum() - 1) < 1
                         && rc.getTeamPower()
-                        > GameConstants.CAPTURE_POWER_COST * (2 + rc.senseAlliedEncampmentSquares().length);
-
+                        > GameConstants.CAPTURE_POWER_COST * (1 + rc.senseAlliedEncampmentSquares().length);
             }
 
         };
@@ -129,6 +136,10 @@ public class StratController {
         allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
         encamps_index = 0;
         mq = new MapQueue();
+        enemyEncamps = new MapQueue();
+        findEnemyEncamps();
+        targetCD = 0;
+        validTarget = false;
 
     }
 
@@ -167,11 +178,11 @@ public class StratController {
         StratType toStrat = StratType.NO_STRAT;
         //lbl:
         {
-//            if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
-//                toStrat = StratType.RUSH_DEFUSION;
-//            }
+            if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
+                toStrat = StratType.RUSH_DEFUSION;
+            }
 
-//            if (shouldReactor.on() && !spookedHQ.on() && earlyGame.on()) {
+//            if (shouldReactor.on() && !spookedHQ.on()) {
 //                toStrat = StratType.RUSH_REACTOR;
 //            }
         }
@@ -199,6 +210,9 @@ public class StratController {
                 radC.write("SUPPLY_REQUEST_OFFSET",
                         1,
                         Clock.getRoundNum());
+//                System.out.println("Tried to write request to: " + 
+//                        radC.getChannel(Consts.c("SUPPLY_REQUEST_OFFSET"), Clock.getRoundNum()));
+
                 radC.write("SUPPLY_SQUARE_POSN",
                         sup,
                         Clock.getRoundNum());
@@ -210,6 +224,53 @@ public class StratController {
                     encamps_index = 0;
                 }
 
+            }
+        }
+        if (curTarget != null && rc.canSenseSquare(curTarget)) {
+            GameObject o = rc.senseObjectAtLocation(curTarget);
+            if (o != null) {
+                if (o instanceof Robot) {
+                    RobotInfo ri = rc.senseRobotInfo((Robot) o);
+                    if (ri.team == rc.getTeam()) {
+                        curTarget = enemyEncamps.pop();
+                        if (validTarget) {
+                            targetCD = Math.max(20 - me.distanceSquaredTo(rc.senseEnemyHQLocation()),7);
+                            validTarget = false;
+                        }
+                    } else {
+                        validTarget = true;
+                    }
+                }
+            } else {
+                curTarget = enemyEncamps.pop();
+                if (validTarget) {
+                    targetCD = Math.max(20 - me.distanceSquaredTo(rc.senseEnemyHQLocation()),7);
+                    validTarget = false;
+                }
+            }
+        }
+        if (lateGame.on()) {
+            radC.write("TARGET_OFFSET", Const.locToInt(rc.senseEnemyHQLocation()), Clock.getRoundNum());
+        } else {
+            if (targetCD == 0) {
+                if (curTarget == null) {
+                    curTarget = enemyEncamps.pop();
+                    if (curTarget == null) {
+                        findEnemyEncamps();
+                        curTarget = enemyEncamps.pop();
+                        if (curTarget == null) {
+                            radC.write("TARGET_OFFSET", Const.locToInt(rc.senseEnemyHQLocation()), Clock.getRoundNum());
+                            return;
+                        }
+                    }
+
+                    radC.write("TARGET_OFFSET", Const.locToInt(curTarget), Clock.getRoundNum());
+                } else {
+                    radC.write("TARGET_OFFSET", Const.locToInt(curTarget), Clock.getRoundNum());
+                }
+            } else {
+                --targetCD;
+                radC.write("TARGET_OFFSET", Const.locToInt(me), Clock.getRoundNum());
             }
         }
 
@@ -259,7 +320,7 @@ public class StratController {
         if (m.distanceSquaredTo(rc.getLocation()) < 2) {
             return -1;
         }
-        return .5 * m.distanceSquaredTo(me) * 1.0 / (1 + Const.disToLine(me, rc.senseEnemyHQLocation(), m));
+        return -.8 * rc.senseEnemyHQLocation().distanceSquaredTo(m) + 1.0 * m.distanceSquaredTo(me) - 0.9 * Math.pow(Const.disToLine(me, rc.senseEnemyHQLocation(), m), 2);
     }
 
     /**
@@ -267,6 +328,15 @@ public class StratController {
      */
     private static boolean goodArtillerySquare(RadioController rc, MapLocation loc) {
         return false;
+    }
+
+    private void findEnemyEncamps() throws Exception {
+        MapLocation[] neutrals = rc.senseEncampmentSquares(rc.senseEnemyHQLocation(), 500, Team.NEUTRAL);
+        for (MapLocation m : neutrals) {
+            enemyEncamps.add(m, (float) Const.disToLine(me, rc.senseEnemyHQLocation(), m) + -1 * rc.senseEnemyHQLocation().distanceSquaredTo(m));
+        }
+
+        //most likely encampments are near enemy base.
     }
 
 }

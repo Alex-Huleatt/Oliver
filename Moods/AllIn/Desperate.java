@@ -67,24 +67,24 @@ public class Desperate extends Mood {
         return;
     }
 
-    private void mine(Direction d) throws Exception {
-        int dir = Const.directionToInt(d);
-        MapLocation me = rc.getLocation();
-
-        MapLocation mine;
-        Team mTeam;
-        for (int i = 0; i < 1; i++) {
-            mine = me.add(Const.directions[((dir + i) + 8) % 8]);
-            mTeam = rc.senseMine(mine);
-            if (mTeam == Team.NEUTRAL) {
-                rc.defuseMine(mine);
-                return;
-            } else if (mTeam == rc.getTeam().opponent()) {
-                // TODO: check if mine location is safe
-            }
-        }
-
-    }
+//    private void mine(Direction d) throws Exception {
+//        int dir = Const.directionToInt(d);
+//        MapLocation me = rc.getLocation();
+//
+//        MapLocation mine;
+//        Team mTeam;
+//        for (int i = 0; i < 1; i++) {
+//            mine = me.add(Const.directions[((dir + i) + 8) % 8]);
+//            mTeam = rc.senseMine(mine);
+//            if (mTeam == Team.NEUTRAL) {
+//                rc.defuseMine(mine);
+//                return;
+//            } else if (mTeam == rc.getTeam().opponent()) {
+//                // TODO: check if mine location is safe
+//            }
+//        }
+//
+//    }
 
     @Override
     public String toString() {

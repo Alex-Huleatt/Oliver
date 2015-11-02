@@ -10,5 +10,5 @@ package team016.Moods.Swarm;
  * @author alexhuleatt
  */
 public enum Idea {
-    ATTACK, OHGODPLEASENO, NOCLUE
+    ATTACK, OHGODPLEASENO, NOCLUE,PREPARE
 }

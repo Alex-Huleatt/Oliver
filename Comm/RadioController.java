@@ -33,7 +33,7 @@ public class RadioController {
     }
 
     private static int getMask(int round_num, int block) {
-        return ((int) xorshiftstar(round_num + block)) << 24;
+        return ((int) xorshiftstar(round_num + block+1)) << 24;
     }
 
     static long xorshiftstar(int x) {
@@ -44,12 +44,12 @@ public class RadioController {
     }
 
     private int myHash(int block, int seed) {
-        long rand = Math.abs(xorshiftstar(seed * ((rc.getTeam() == Team.A) ? 17 : 37)));
+        long rand = Math.abs(1+xorshiftstar(seed * ((rc.getTeam() == Team.A) ? 17 : 37)));
         return (int) ((rand * (1 + block)) % GameConstants.BROADCAST_MAX_CHANNELS);
     }
 
-    private int getBaseChannel(int block, int round_num) {
-        return Math.abs(myHash(block, round_num));
+    public int getBaseChannel(int block, int round_num) {
+        return Math.abs(myHash(block, round_num+1));
     }
 
     private static int signMessage(int message, int round_num, int block) {
@@ -120,35 +120,23 @@ public class RadioController {
         return block;
     }
 
-    private int read(int block_num, int offset) throws Exception {
-        int round_num = Clock.getRoundNum();
-        int chan = getChannel(block_num, offset, round_num);
-        int raw = rc.readBroadcast(chan);
-        //System.out.println("Read:" + chan + ", " + raw);
-        if (!isSigned(raw, round_num, block_num)) {
-
-            return -1;
-        } else {
-            return unsign(raw, round_num, block_num);
-        }
-
-    }
-
     public int read(Pair<Integer,Integer> p, int round_num) throws Exception {
         return read(p.a,p.b,round_num);
     }
-    public void write(Pair<Integer,Integer> p, int message,int round_num) throws Exception {
+    
+    public void write(Pair<Integer,Integer> p, int message, int round_num) throws Exception {
         write(p.a,p.b,message, round_num);
     }
     private int read(int block_num, int offset, int round_num) throws Exception {
 
         int chan = getChannel(block_num, offset, round_num);
         int raw = rc.readBroadcast(chan);
-        //System.out.println("Read:" + chan + ", " + raw);
+        
         if (!isSigned(raw, round_num, block_num)) {
-
+            //System.out.println("Read:" + chan + ", " + raw + " " + block_num + ", " + offset +" x");
             return -1;
         } else {
+            //System.out.println("Read:" + chan + ", " + raw + " " + block_num + ", " + offset +" g " + unsign(raw, round_num, block_num));
             return unsign(raw, round_num, block_num);
         }
 
@@ -171,16 +159,14 @@ public class RadioController {
         return (base + offset) % GameConstants.BROADCAST_MAX_CHANNELS;
     }
 
+    public int getChannel(Pair<Integer,Integer> p, int round_num) {
+        return getChannel(p.a,p.b,round_num);
+    }
     private void write(int block_num, int offset, int message, int round_num) throws Exception {
         int signed = signMessage(message, block_num, round_num);
         int chan = getChannel(block_num, offset, round_num);
         rc.broadcast(chan, signed);
-        //System.out.println("Write:" + chan + ", " + signed);
-    }
-
-    public boolean getUsed(RobotController rc) {
-        
-        return false;
+        //System.out.println("Write:" + message + " "+ chan + ", " + signed);
     }
     
     public void write(String ch, int message, int round_num) throws Exception {
@@ -188,6 +174,7 @@ public class RadioController {
     }
     
     public int read(String ch, int round_num) throws Exception {
+        //System.out.print(ch +" ");
         return read(Consts.c(ch),round_num);
     }
     

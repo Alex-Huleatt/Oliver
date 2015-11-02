@@ -16,8 +16,10 @@ import battlecode.common.TerrainTile;
 import java.util.Random;
 import team016.Comm.RadioController;
 import java.util.HashMap;
+import team016.Consts;
 import team016.Moods.AllIn.Desperate;
 import team016.Moods.Supply.Helpful;
+import team016.Moods.Swarm.Prepare;
 import team016.Moods.Zerg.Aggro;
 import team016.Moods.Zerg.Rushing;
 import team016.Strat.StratType;
@@ -29,8 +31,6 @@ import team016.Units.Unit;
  * @author alexhuleatt
  */
 public abstract class Mood {
-
-    public static int MAX_IDEA_DIS = 20;
 
     public Unit u;
     public RobotController rc;
@@ -50,6 +50,7 @@ public abstract class Mood {
     boolean onRight;
     int pathAllowance = 30;
     StratType lastStrat;
+    public int cd;
 
     public Mood(Unit u) {
         this.u = u;
@@ -58,10 +59,13 @@ public abstract class Mood {
         this.team = rc.getTeam();
         this.onRight = false;
         this.radC = new RadioController(rc);
+        cd = 15;
     }
 
-    public void updateVars() {
+    public void updateVars() throws Exception {
         me = rc.getLocation();
+
+        getNearbyRobots(25);
     }
 
     public void act() throws Exception {
@@ -74,11 +78,14 @@ public abstract class Mood {
             return null;
         }
         int supply_need = radC.read("SUPPLY_REQUEST_OFFSET", Clock.getRoundNum());
-        //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
         boolean needSupply = supply_need == 1;
 
         if (needSupply && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 5) {
             return new Helpful((Soldier) u);
+        }
+        if (cd > 0) {
+            --cd;
+            return null;
         }
         if (st != lastStrat) {
             lastStrat = st;
@@ -88,10 +95,9 @@ public abstract class Mood {
                     newMood = new Rushing((Soldier) u);
                     break;
                 case SOS:
-                    newMood = new Spooked((Soldier) u);
-                    break;
-                case ALL_IN:
-                    newMood = new Desperate((Soldier) u);
+                    if (rc.getLocation().distanceSquaredTo(rc.getLocation()) < 100) {
+                        newMood = new Spooked((Soldier) u);
+                    }
                     break;
             }
             if (newMood != null) {
@@ -132,12 +138,7 @@ public abstract class Mood {
     }
 
     public void move(int dir) throws Exception {
-        if (rc.isActive() && rc.canMove(Const.directions[dir])) {
-            rc.move(Const.directions[dir]);
-            this.dir = dir;
-        } else {
-            //System.out.println("rc failed to move in dir");
-        }
+        move(Const.directions[dir]);
     }
 
     /**
@@ -149,8 +150,10 @@ public abstract class Mood {
      * @throws Exception
      */
     public void moveTowards(MapLocation goal) throws Exception {
-        MapLocation me = rc.getLocation();
-
+        rc.setIndicatorString(1, "moveTowards");
+        if (goal == null) {
+            return;
+        }
         if (start == null || end == null || !goal.equals(end)) {
             // setup
             start = rc.getLocation();
@@ -180,7 +183,7 @@ public abstract class Mood {
         if (!bug && !Const.isObstacle(rc, dirToGoal)
                 && Const.locOnLine(start, goal, me)) {
             // we can move straight on the line
-            move(me.directionTo(goal));
+            move(dirToGoal);
             return;
         }
 
@@ -189,7 +192,7 @@ public abstract class Mood {
         }
 
         if (mining || disToGoal > pathAllowance + closest) {
-            rc.setIndicatorString(1, "Too far off path!");
+            //rc.setIndicatorString(1, "Too far off path!");
             mining = true;
             int perp = getDir(me, start, goal);
             //Now we need to determine which orientation
@@ -240,7 +243,7 @@ public abstract class Mood {
             move(me.directionTo(t_clos));
             onRight = getOnRight(goal);
             bug = true;
-            rc.setIndicatorString(0, "initial transition");
+            //rc.setIndicatorString(1, "initial transition");
             return;
         }
         MapLocation nextMove = trace(onRight);
@@ -346,24 +349,25 @@ public abstract class Mood {
     }
 
     public boolean moveish(Direction d) throws Exception {
+        rc.setIndicatorString(1, "Moveish: " + d);
         if (!rc.isActive()) {
             //System.out.println("rc wasn't active in moveish");
             return false;
         }
         if (rc.canMove(d) && !Const.isObstacle(rc, d)) {
-            rc.move(d);
+            move(d);
             return false;
         }
         int local_dir = Const.directionToInt(d);
         for (int i = 1; i < 3; i++) {
             Direction left = Const.directions[((local_dir - i) + 8) % 8];
             if (rc.canMove(left) && !Const.isObstacle(rc, left)) {
-                rc.move(left);
+                move(left);
                 return false;
             }
             Direction right = Const.directions[(local_dir + i) % 8];
-            if (rc.canMove(right) && !Const.isObstacle(rc, d)) {
-                rc.move(right);
+            if (rc.canMove(right) && !Const.isObstacle(rc, right)) {
+                move(right);
                 return false;
             }
         }
@@ -372,6 +376,7 @@ public abstract class Mood {
     }
 
     public boolean simpleMove(MapLocation goal) throws Exception {
+        rc.setIndicatorString(1, "Simple move: " + goal);
         Direction d = me.directionTo(goal);
         MapLocation next = me.add(d);
         if (rc.isActive()) {
@@ -413,6 +418,26 @@ public abstract class Mood {
         //enemy encampments?
         //my health?
         //
+    }
+
+    public void mine(Direction d) throws Exception {
+        int dir = Const.directionToInt(d);
+        MapLocation me = rc.getLocation();
+
+        MapLocation mine;
+        Team mTeam;
+        for (int i = -1; i <= 1; i++) {
+            mine = me.add(Const.directions[((dir + i) + 8) % 8]);
+            mTeam = rc.senseMine(mine);
+            if (mTeam == Team.NEUTRAL) {
+                rc.defuseMine(mine);
+                return;
+            } else if (mTeam == rc.getTeam().opponent() && Const.isSafeLoc(rc, me, enemies)) {
+                rc.defuseMine(mine);
+                return;
+            }
+        }
+
     }
 
 }

@@ -1,6 +1,7 @@
 package team016;
 
 import battlecode.common.*;
+import java.util.ArrayList;
 import static team016.Const.intToLoc;
 import static team016.Const.validLoc;
 
@@ -38,6 +39,7 @@ public class Const {
         if (obs.length == 0) {
             return null;
         }
+        
         int min = loc.distanceSquaredTo(obs[0].location);
         int mindex = 0;
         for (int i = 1; i < obs.length; i++) {
@@ -60,20 +62,57 @@ public class Const {
             return new RobotInfo[]{};
         }
 
-        RobotInfo[] info = new RobotInfo[bots.length];
-        for (int i = 0; i < bots.length; i++) {
-            info[i] = rc.senseRobotInfo(bots[i]);
+        //RobotInfo[] info = new RobotInfo[bots.length];
+        ArrayList<RobotInfo> info = new ArrayList<RobotInfo>();
+        for (Robot bot : bots) {
+            if (rc.canSenseObject(bot)) {
+                info.add(rc.senseRobotInfo(bot));
+            }
         }
-        return info;
+        return info.toArray(new RobotInfo[0]);
     }
 
     public static int getThreat(RobotController rc, Robot[] bots) throws Exception {
-        RobotInfo[] infos = getInfos(rc, bots);
         int total = 0;
-        for (RobotInfo info : infos) {
-            total += getThreatLevel(info);
+        RobotInfo inf;
+        for (Robot r : bots) {
+            inf = rc.senseRobotInfo(r);
+            total += getThreatLevel(inf);
         }
         return total;
+    }
+
+    public static boolean shouldAttack(RobotController rc, MapLocation me, Robot[] enemies, Robot[] allies) throws Exception {
+        return shouldAttack_threatLevelHelper(rc, me, allies.length, rc.getTeam())
+                > shouldAttack_threatLevelHelper(rc, me, enemies.length, rc.getTeam().opponent());
+    }
+
+    public static int shouldAttack_threatLevelHelper(RobotController rc, MapLocation me, int len, Team t) throws Exception {
+        MapLocation[] encamps;
+        if (t == rc.getTeam().opponent()) {
+            encamps = rc.senseEncampmentSquares(me, 25, Team.NEUTRAL);
+        } else {
+            encamps = rc.senseEncampmentSquares(me, 25, t);
+        }
+        int total_artillery = 0;
+        int total_other = 0;
+        int sub = 0;
+        for (MapLocation m : encamps) {
+            if (rc.canSenseSquare(m)) {
+                GameObject o = rc.senseObjectAtLocation(m);
+                if (o instanceof Robot) {
+                    RobotType rt = rc.senseRobotInfo((Robot) o).type;
+                    if (rt == RobotType.ARTILLERY) {
+                        total_artillery++;
+                        sub++;
+                    } else if (rt != RobotType.SOLDIER){
+                        total_other++;
+                        sub++;
+                    }
+                }
+            }
+        }
+        return 4 * total_artillery + (len-sub) + -1 * total_other;
     }
 
     public static int getThreatLevel(RobotInfo info) {
@@ -226,10 +265,7 @@ public class Const {
 
     public static boolean isBadMine(RobotController rc, MapLocation loc) {
         Team mine = rc.senseMine(loc);
-        if (mine != null && mine != rc.getTeam()) {
-            return true;
-        }
-        return false;
+        return (mine != null && mine != rc.getTeam());
     }
 
     public static boolean locOnLine(MapLocation start, MapLocation end, MapLocation loc) {
@@ -263,8 +299,7 @@ public class Const {
         if (tt == TerrainTile.VOID || tt == TerrainTile.OFF_MAP) {
             return true;
         }
-        Team mine = rc.senseMine(loc);
-        if (mine != null && mine != rc.getTeam()) {
+        if (isBadMine(rc,loc)) {
             return true;
         }
         if (rc.canSenseSquare(loc)) {
@@ -285,6 +320,7 @@ public class Const {
         }
         return false;
     }
+
     public static MapLocation midpoint(MapLocation start, MapLocation end) {
         return new MapLocation((start.x + end.x) / 2, (start.y + end.y) / 2);
     }

@@ -24,13 +24,6 @@ public class Spooked extends Mood {
     }
     
     @Override
-    public Mood swing() throws Exception {
-        Mood parent = super.swing();
-        if (parent != null) return parent;
-        return null;
-    }
-    
-    @Override
     public void act() throws Exception {
         //defend HQ
         
@@ -44,9 +37,7 @@ public class Spooked extends Mood {
             if (enemies.length < allies.length) {
                 if (dist > 15) moveTowards(closest);
                 else moveish(rc.getLocation().directionTo(closest));
-            } else if (dist < 10) {
-                moveTowards(rc.senseHQLocation());
-            }
+            } else moveTowards(rc.senseHQLocation());
         }
     }
     

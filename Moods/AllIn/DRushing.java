@@ -23,7 +23,7 @@ public class DRushing extends Mood {
         // - If an enemy unit is sensed within range X, Zerg.Aggro
         getNearbyRobots(25);
         if (enemies.length > 0) {
-            return new Aggro((Soldier)u, allies, enemies);
+            return new Aggro((Soldier)u);
         }
         return null;
     }

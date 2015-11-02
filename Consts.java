@@ -5,6 +5,9 @@
  */
 package team016;
 
+import java.util.HashSet;
+import team016.Comm.RadioController;
+
 
 /**
  *
@@ -19,7 +22,9 @@ public enum Consts {
     REPORT_BLOCK,
     SOLDIER_BLOCK,
     MISSION_BLOCK,
-    IDEA_SIZE(4);
+    DEMOCRACY_BLOCK,
+    HALP_BLOCK,
+    IDEA_SIZE(3);
     
     public final int v;
     Consts() {
@@ -32,26 +37,32 @@ public enum Consts {
 
     public enum Channel {
 
-        GLOBAL_STRAT(HQ_BLOCK,0), HQ_STRAT(HQ_BLOCK,1), 
+        GLOBAL_STRAT(HQ_BLOCK,0), HQ_STRAT(HQ_BLOCK,1),TARGET_OFFSET(HQ_BLOCK,2), 
         
         REPORT_ALIVE_OFFSET(REPORT_BLOCK,0),
         SUPPLY_COUNT_OFFSET(REPORT_BLOCK,1),
         SUPPLY_REQUEST_OFFSET(REPORT_BLOCK,2),
         SUPPLY_SQUARE_POSN(REPORT_BLOCK,3),
         SUPPLY_REQUEST_NEW_POSN(REPORT_BLOCK,4),
+        GEN_COUNT_OFFSET(REPORT_BLOCK,5),
         
         REQUESTED_SOLDIERS_OFFSET(MISSION_BLOCK,0),
         
-        SOLDIER_IDEA_OFFSET(SOLDIER_BLOCK,1),
-        SOLDIER_POSN_OFFSET(SOLDIER_BLOCK,2),
-        SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,3);
+        SOLDIER_IDEA_OFFSET(SOLDIER_BLOCK,0),
+        SOLDIER_POSN_OFFSET(SOLDIER_BLOCK,1),
+        SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,2);
+        
         
         public Consts c;
         public int o;
         Channel(Consts c, int o) {
             this.c=c;
+            this.o=o;
         }
+        
     }
+    
+    
     /**
      * Get nth chunk of block.
      * @param s channel name.
@@ -62,6 +73,7 @@ public enum Consts {
     public static Pair<Integer,Integer> c(String s, int sz, int num) {
         Pair<Integer,Integer> p = c(s);
         p.b+=sz*num;
+        //System.out.println(s + " " + p);
         return p;
     }
     
@@ -72,9 +84,30 @@ public enum Consts {
      */
     public static Pair<Integer,Integer> c(String s) {
         Channel c = Channel.valueOf(s);
+        Pair<Integer,Integer> p = chanToPair(c);
+        //System.out.println(s +":"+p);
+        return p;
+    }
+    
+    private static Pair<Integer, Integer> chanToPair(Channel c) {
         int block = c.c.ordinal();
-        int offset = c.ordinal();
+        int offset = c.o;
         return new Pair<Integer,Integer>(block,offset);
     }
 
+    public static HashSet<Integer> allUsedChannels(RadioController radC, int round_num) {
+        Channel[] cs = Channel.values();
+        HashSet<Integer> taken = new HashSet<Integer>();
+        //for each channel we will have 2 pairs
+        for (Channel c : cs) {
+            Pair<Integer,Integer> p = chanToPair(c);
+            taken.add(radC.getChannel(p.a, p.b, round_num));
+            taken.add(radC.getChannel(p.a, p.b, round_num-1));
+        }
+        return taken;
+    }
+
+    public static int[][] readQueue(String s) {
+        return null;
+    }
 }

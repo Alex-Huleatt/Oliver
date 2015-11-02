@@ -16,10 +16,12 @@ public class Supplier extends Unit  {
 
     public Supplier(RobotController rc) {
         super(rc);
+        
     }
     
     @Override
-    public void run() {
+    public void run() throws Exception {
+        radC.unitReport("SUPPLY_COUNT_OFFSET");
         rc.yield();
     }
     

@@ -6,6 +6,7 @@
 package team016.Units;
 
 import battlecode.common.RobotController;
+import team016.Comm.RadioController;
 
 /**
  *
@@ -13,8 +14,10 @@ import battlecode.common.RobotController;
  */
 public abstract class Unit {
     public RobotController rc;
+    public RadioController radC;
     public Unit(RobotController rc) {
         this.rc = rc;
+        this.radC = new RadioController(rc);
     }
     
     public void run() throws Exception{}

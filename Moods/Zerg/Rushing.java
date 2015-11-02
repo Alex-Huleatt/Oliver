@@ -1,5 +1,7 @@
 package team016.Moods.Zerg;
 
+import battlecode.common.Clock;
+import battlecode.common.MapLocation;
 import team016.Const;
 import team016.Units.Soldier;
 import team016.Moods.Mood;
@@ -22,14 +24,17 @@ public class Rushing extends Mood {
         // - If an enemy unit is sensed within range X, Zerg.Aggro
         getNearbyRobots(25);
         if (enemies.length > 0) {
-            return new Aggro((Soldier)u, allies, enemies);
+            return new Aggro((Soldier)u);
         }
         return null;
     }
 
     @Override
     public void act() throws Exception {
-        moveTowards(enemyHQ);
+        MapLocation target = Const.intToLoc(
+                radC.read("TARGET_OFFSET", Clock.getRoundNum()));
+        rc.setIndicatorString(2, ""+target);
+        moveTowards(target);
     }
 
     @Override
