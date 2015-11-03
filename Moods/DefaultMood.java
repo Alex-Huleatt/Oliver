@@ -16,6 +16,7 @@ public class DefaultMood extends Mood {
 
     public DefaultMood(Soldier s) {
         super((Unit)s);
+        cd = 2;
     }
     
 }

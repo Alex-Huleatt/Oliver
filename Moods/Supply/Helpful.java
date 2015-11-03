@@ -34,22 +34,31 @@ public class Helpful extends Mood {
     final static MapLocation nullGoal = new MapLocation(-1, 255);
     boolean encamping;
     RobotType encType;
+    int close_time;
 
     public Helpful(Soldier s) throws Exception {
         super(s);
         findGoal();
         acted = false;
         encamping = false;
+        close_time = 0;
     }
 
     public final void findGoal() throws Exception {
         goal = Const.intToLoc(radC.read("SUPPLY_SQUARE_POSN",
                 Clock.getRoundNum()));
+        if (!Const.validLoc(goal)) {
+            radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
+        }
+
         acted = false;
     }
 
     @Override
     public Mood swing() throws Exception {
+        if (radC.read("MEDBAY_COUNT", Clock.getRoundNum() - 1) ==-1) {
+            return new Weeoo((Soldier) u);
+        }
         if (goal == null || goal.equals(nullGoal)) {
             findGoal();
         }
@@ -60,8 +69,12 @@ public class Helpful extends Mood {
     public void act() throws Exception {
         if (encamping) {
             if (Const.validLoc(goal)) {
-                if (encType==RobotType.SUPPLIER)radC.unitReport("SUPPLY_COUNT_OFFSET");
-                if (encType==RobotType.GENERATOR)radC.unitReport("GEN_COUNT_OFFSET");
+                if (encType == RobotType.SUPPLIER) {
+                    radC.unitReport("SUPPLY_COUNT_OFFSET");
+                }
+                if (encType == RobotType.GENERATOR) {
+                    radC.unitReport("GEN_COUNT_OFFSET");
+                }
             }
             return;
         }
@@ -74,10 +87,17 @@ public class Helpful extends Mood {
             radC.unitReport("SUPPLY_COUNT_OFFSET");
             radC.unitReport("GEN_COUNT_OFFSET");
         } else {
-            goal = null;
+            //radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
+            findGoal();
             return;
         }
-        if (goal.distanceSquaredTo(rc.senseHQLocation()) < 5) {
+        if (me.distanceSquaredTo(goal) < 5) {
+            close_time++;
+        } else {
+            close_time = 0;
+        }
+
+        if (close_time > 5 || goal.distanceSquaredTo(rc.senseHQLocation()) <= 4) {
             goal = null;
             radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
         }
@@ -90,8 +110,7 @@ public class Helpful extends Mood {
                         encamping = true;
                         int supply_cnt = radC.read("SUPPLY_COUNT_OFFSET", Clock.getRoundNum() - 1);
                         int gen_cnt = radC.read("GEN_COUNT_OFFSET", Clock.getRoundNum() - 1);
-                        if (supply_cnt < gen_cnt-1 && gen_cnt > 0) {
-                            
+                        if (supply_cnt < gen_cnt) {
                             encType = RobotType.SUPPLIER;
                         } else {
                             encType = RobotType.GENERATOR;

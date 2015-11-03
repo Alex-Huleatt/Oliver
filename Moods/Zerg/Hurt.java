@@ -19,31 +19,33 @@ public class Hurt extends Mood {
     
     @Override
     public Mood swing() throws Exception{
-        Mood sp = super.swing();
-        if (sp != null) return sp;
+//        Mood sp = super.swing();
+//        if (sp != null) return sp;
         // - If unit has many allies around it, transition to:
         //  - Zerg.Aggro if there are enemy bots around
         //  - Zerg.Rushing if there are not
         // - Else stay Hurt
-        
-        getNearbyRobots(25);
-        if (allies.length < 4 || enemies.length > allies.length) {
-            return null;
-        }
-        if (enemies.length == 0) {
-            return new Rushing((Soldier)u);
-        }
-        return new Aggro((Soldier)u);
+        if (rc.getEnergon() == RobotType.SOLDIER.maxEnergon) return new Rushing((Soldier)u);
+//        getNearbyRobots(25);
+//        if (allies.length < 4 || enemies.length > allies.length) {
+//            return null;
+//        }
+//        if (enemies.length == 0) {
+//            return new Rushing((Soldier)u);
+//        }
+        return null;//new Aggro((Soldier)u);
     }
 
     @Override
     public void act() throws Exception {
-        MapLocation target = Const.intToLoc(radC.read("TARGET_OFFSET", Clock.getRoundNum()));
-        Direction goal = rc.getLocation().directionTo(target);
-        Direction dir = Const.findSafeLoc(rc, enemies, goal, false);
-        if (rc.isActive() && dir != null && !Const.isObstacle(rc, dir)) {
-            rc.move(dir);
-        }
+//        MapLocation target = Const.intToLoc(radC.read("TARGET_OFFSET", Clock.getRoundNum()));
+//        Direction goal = rc.getLocation().directionTo(target);
+//        Direction dir = Const.findSafeLoc(rc, enemies, goal, false);
+//        if (rc.isActive() && dir != null && !Const.isObstacle(rc, dir)) {
+//            rc.move(dir);
+//        }
+        MapLocation rally = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
+        moveTowards(rally);
     }
 
 

@@ -7,6 +7,7 @@ import battlecode.common.GameConstants;
 import battlecode.common.RobotController;
 import battlecode.common.RobotType;
 import team016.Units.Generator;
+import team016.Units.Medbay;
 import team016.Units.Supplier;
 
 /**
@@ -31,6 +32,9 @@ public class RobotPlayer {
                         break;
                     case GENERATOR:
                         (new Generator(rc)).run();
+                        break;
+                    case MEDBAY:
+                        (new Medbay(rc)).run();
                         break;
                     default:
                         System.out.println("Unknown rc type: " + rc.getType());

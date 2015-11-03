@@ -55,7 +55,6 @@ public class Aggro extends Mood {
 
         Direction dir = me.directionTo(closest);
         int dist = me.distanceSquaredTo(closest);
-
         if (Const.shouldAttack(rc, me, enemies, allies)) {
 
             if (dist > 15) {
@@ -72,7 +71,6 @@ public class Aggro extends Mood {
         }
 
     }
-
 
     @Override
     public String toString() {

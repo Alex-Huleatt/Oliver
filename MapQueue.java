@@ -24,7 +24,7 @@ public class MapQueue {
 
     public void add(MapLocation p, float c) {
         int i = index;
-        for (; i != 0 && c > costs[i - 1] && i > index - 20; i--) {
+        for (; i != 0 && c > costs[i - 1] && i > index - 300; --i) {
             costs[i] = costs[i - 1];
             q[i] = q[i - 1];
         }

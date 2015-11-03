@@ -15,6 +15,7 @@ import battlecode.common.RobotInfo;
 import battlecode.common.RobotType;
 import battlecode.common.Team;
 import battlecode.common.Upgrade;
+import java.util.HashSet;
 import team016.Comm.RadioController;
 import team016.Const;
 import team016.Consts;
@@ -46,6 +47,9 @@ public class StratController {
     boolean validTarget;
 
     MapLocation me;
+    MapLocation sup;
+    MapLocation old_sup;
+    MapLocation rally;
 
     public interface Datum {
 
@@ -54,7 +58,7 @@ public class StratController {
 
     //this line is going to be long.
     public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke,
-            shouldDefuse, shouldReactor, shouldVision, needSupply, needNewSupplyLoc;
+            shouldDefuse, shouldReactor, shouldVision, needSupply, needNewSupplyLoc, bigMap;
 
     public StratController(RobotController rct) throws Exception {
         this.rc = rct;
@@ -107,7 +111,8 @@ public class StratController {
         shouldReactor = new Datum() {
 
             public boolean on() throws Exception {
-                return !rc.hasUpgrade(Upgrade.FUSION);
+
+                return !rc.hasUpgrade(Upgrade.FUSION) && bigMap.on() && rc.getTeamPower() < 100;
             }
 
         };
@@ -119,7 +124,7 @@ public class StratController {
                 return radC.read("SUPPLY_COUNT_OFFSET",
                         Clock.getRoundNum() - 1) < 1
                         && rc.getTeamPower()
-                        > GameConstants.CAPTURE_POWER_COST * (1 + rc.senseAlliedEncampmentSquares().length);
+                        > GameConstants.CAPTURE_POWER_COST;
             }
 
         };
@@ -127,6 +132,14 @@ public class StratController {
 
             public boolean on() throws Exception {
                 return 1 == radC.read("SUPPLY_REQUEST_NEW_POSN", Clock.getRoundNum() - 1);
+            }
+
+        };
+        bigMap = new Datum() {
+
+            public boolean on() throws Exception {
+                double mapSize = rc.getLocation().distanceSquaredTo(rc.senseEnemyHQLocation());
+                return mapSize > 400;
             }
 
         };
@@ -140,7 +153,7 @@ public class StratController {
         findEnemyEncamps();
         targetCD = 0;
         validTarget = false;
-
+        rally = getRally(500);
     }
 
     public void majorStrat() throws Exception {
@@ -156,10 +169,6 @@ public class StratController {
                 break lbl;
             }
 
-//            if (lateGame.on() || enemyNuke.on()) {
-//                toStrat = StratType.ALL_IN;
-//                break lbl;
-//            }
             toStrat = StratType.ZERG;
         }
         if (curStrat != toStrat) {
@@ -182,98 +191,96 @@ public class StratController {
                 toStrat = StratType.RUSH_DEFUSION;
             }
 
-//            if (shouldReactor.on() && !spookedHQ.on()) {
-//                toStrat = StratType.RUSH_REACTOR;
-//            }
+            if (shouldReactor.on() && !spookedHQ.on()) {
+                toStrat = StratType.RUSH_REACTOR;
+            }
         }
         hqStrat = toStrat;
 
     }
 
-    /**
-     * TODO
-     *
-     * @throws java.lang.Exception
-     */
     public void minorStrat() throws Exception {
-        int sup;
-        if (needNewSupplyLoc.on()) {
+
+        if (needNewSupplyLoc.on() || sup == null) {
             sup = findGoodSupplySquare();
+            if (sup == null) {
+                resetSupplyLocs();
+                sup = findGoodSupplySquare();
+            }
             radC.write("SUPPLY_SQUARE_POSN",
-                    sup,
+                    Const.locToInt(sup),
                     Clock.getRoundNum());
         }
         if (needSupply.on()) {
-            sup = findGoodSupplySquare();
-            if (sup != -1) {
-                //System.out.println(RadioController.REPORT_BLOCK + " " + RadioController.SUPPLY_REQUEST_OFFSET + " " + Clock.getRoundNum());
+            if (sup != null) {
                 radC.write("SUPPLY_REQUEST_OFFSET",
                         1,
                         Clock.getRoundNum());
-//                System.out.println("Tried to write request to: " + 
-//                        radC.getChannel(Consts.c("SUPPLY_REQUEST_OFFSET"), Clock.getRoundNum()));
-
                 radC.write("SUPPLY_SQUARE_POSN",
-                        sup,
+                        Const.locToInt(sup),
                         Clock.getRoundNum());
-
-            } else {
-                while (encamps_index >= allEncamps.length) {
-                    range *= 2;
-                    allEncamps = rc.senseEncampmentSquares(me, range, Team.NEUTRAL);
-                    encamps_index = 0;
-                }
-
             }
         }
+        //do medbay logic here
+        if (radC.read("MEDBAY_COUNT", Clock.getRoundNum() - 1) < 1 && bigMap.on()) {
+            radC.write("MEDBAY_REQUEST", 1, Clock.getRoundNum());
+        }
+        if (rc.canSenseSquare(rally)) {
+            GameObject o = rc.senseObjectAtLocation(rally);
+            if (o != null && o instanceof Robot) {
+                Robot r = (Robot) o;
+                if (rc.senseRobotInfo(r).team != rc.getTeam()) {
+                    curTarget = rally;
+                }
+            }
+        }
+        System.out.println("1.");
         if (curTarget != null && rc.canSenseSquare(curTarget)) {
+            System.out.println("2.");
             GameObject o = rc.senseObjectAtLocation(curTarget);
             if (o != null) {
                 if (o instanceof Robot) {
                     RobotInfo ri = rc.senseRobotInfo((Robot) o);
                     if (ri.team == rc.getTeam()) {
-                        curTarget = enemyEncamps.pop();
                         if (validTarget) {
-                            targetCD = Math.max(20 - me.distanceSquaredTo(rc.senseEnemyHQLocation()),7);
+                            targetCD = 17;
                             validTarget = false;
+                        } else {
+                            curTarget = enemyEncamps.pop();
                         }
                     } else {
                         validTarget = true;
                     }
                 }
             } else {
-                curTarget = enemyEncamps.pop();
                 if (validTarget) {
-                    targetCD = Math.max(20 - me.distanceSquaredTo(rc.senseEnemyHQLocation()),7);
+                    targetCD = 17;
                     validTarget = false;
                 }
             }
         }
-        if (lateGame.on()) {
-            radC.write("TARGET_OFFSET", Const.locToInt(rc.senseEnemyHQLocation()), Clock.getRoundNum());
+        if (targetCD > 0) {
+            --targetCD;
+            radC.write("REGROUP_FLAG", 1, Clock.getRoundNum());
         } else {
-            if (targetCD == 0) {
-                if (curTarget == null) {
+            if (lateGame.on() || enemyNuke.on()) {
+                curTarget = rc.senseEnemyHQLocation();
+            } else {
+                if (curTarget == null && targetCD == 0) {
+                    curTarget = enemyEncamps.pop();
+                } else if (curTarget == null) {
                     curTarget = enemyEncamps.pop();
                     if (curTarget == null) {
                         findEnemyEncamps();
                         curTarget = enemyEncamps.pop();
-                        if (curTarget == null) {
-                            radC.write("TARGET_OFFSET", Const.locToInt(rc.senseEnemyHQLocation()), Clock.getRoundNum());
-                            return;
-                        }
                     }
-
-                    radC.write("TARGET_OFFSET", Const.locToInt(curTarget), Clock.getRoundNum());
-                } else {
-                    radC.write("TARGET_OFFSET", Const.locToInt(curTarget), Clock.getRoundNum());
                 }
-            } else {
-                --targetCD;
-                radC.write("TARGET_OFFSET", Const.locToInt(me), Clock.getRoundNum());
             }
         }
-
+        radC.write(
+                "TARGET_OFFSET", Const.locToInt(curTarget), Clock.getRoundNum());
+        radC.write(
+                "RALLY_OFFSET", Const.locToInt(rally), Clock.getRoundNum());
         //System.out.println(Const.intToLoc(sqr));
     }
 
@@ -288,52 +295,75 @@ public class StratController {
     }
 
     /**
-     * TODO
-     *
-     * @throws java.lang.Exception
-     */
-    public void encamp() throws Exception {
-        //rc.senseAllEncampmentSquares();
-        //MapLocation[] encamps = rc.senseAllEncampmentSquares();
-
-    }
-
-    /**
      * TODO*
      */
-    private int findGoodSupplySquare() throws Exception {
-        Timer t = new Timer();
-        t.start();
+    private MapLocation findGoodSupplySquare() throws Exception {
         for (int i = encamps_index; i < encamps_index + 20 && i < allEncamps.length; i++) {
             float h = (float) supplyHeuristic(allEncamps[i]);
-            if (h != -1) {
+            if (h != 0) {
                 mq.add(allEncamps[i], h);
             }
         }
-        t.stop();
-        encamps_index += 10;
+        //t.stop();
+        encamps_index += 20;
         MapLocation m = mq.pop();
-        return Const.locToInt(m);
+
+        if (m == null) {
+            return null;
+        }
+        if (m.equals(rally)) {
+            m = mq.pop();
+        }
+        return m;
+    }
+
+    private void resetSupplyLocs() throws Exception {
+        mq = new MapQueue();
+        MapLocation[] neutrals = new MapLocation[0];
+        range *= 2;
+        while ((neutrals = rc.senseEncampmentSquares(me, range, Team.NEUTRAL)).length < 1) {
+            range *= 2;
+        }
+        allEncamps = neutrals;
+        encamps_index = 0;
     }
 
     private double supplyHeuristic(MapLocation m) {
-        if (m.distanceSquaredTo(rc.getLocation()) < 2) {
-            return -1;
-        }
-        return -.8 * rc.senseEnemyHQLocation().distanceSquaredTo(m) + 1.0 * m.distanceSquaredTo(me) - 0.9 * Math.pow(Const.disToLine(me, rc.senseEnemyHQLocation(), m), 2);
+        return 1.0 * m.distanceSquaredTo(me);// - 0.0 * Math.pow(Const.disToLine(me, rc.senseEnemyHQLocation(), m), 2);
     }
 
-    /**
-     * TODO*
-     */
-    private static boolean goodArtillerySquare(RadioController rc, MapLocation loc) {
-        return false;
+    private MapLocation getRally(int range) throws Exception {
+        //get one closest to center
+        int k = 4;
+        MapLocation enHQ = rc.senseEnemyHQLocation();
+        int x = (k * me.x + enHQ.x) / (k + 1);
+        int y = (k * me.y + enHQ.y) / (k + 1);
+        MapLocation midpoint = new MapLocation(x, y);
+        MapLocation minPoint = null;
+        int min_dis = Integer.MAX_VALUE;
+        MapLocation[] neuts = rc.senseEncampmentSquares(midpoint, range, Team.NEUTRAL);
+        int count = 0;
+        for (MapLocation m : neuts) {
+            int dis = m.distanceSquaredTo(midpoint);
+            if (dis < min_dis) {
+                min_dis = dis;
+                minPoint = m;
+            }
+            count++;
+            if (count > 30) {
+                break;
+            }
+        }
+        if (minPoint == null) {
+            return getRally(range * 2);
+        }
+        return minPoint;
     }
 
     private void findEnemyEncamps() throws Exception {
-        MapLocation[] neutrals = rc.senseEncampmentSquares(rc.senseEnemyHQLocation(), 500, Team.NEUTRAL);
+        MapLocation[] neutrals = rc.senseEncampmentSquares(rc.senseEnemyHQLocation(), 800, Team.NEUTRAL);
         for (MapLocation m : neutrals) {
-            enemyEncamps.add(m, (float) Const.disToLine(me, rc.senseEnemyHQLocation(), m) + -1 * rc.senseEnemyHQLocation().distanceSquaredTo(m));
+            enemyEncamps.add(m, me.distanceSquaredTo(m));
         }
 
         //most likely encampments are near enemy base.

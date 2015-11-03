@@ -19,6 +19,7 @@ import java.util.HashMap;
 import team016.Consts;
 import team016.Moods.AllIn.Desperate;
 import team016.Moods.Supply.Helpful;
+import team016.Moods.Supply.Weeoo;
 import team016.Moods.Swarm.Prepare;
 import team016.Moods.Zerg.Aggro;
 import team016.Moods.Zerg.Rushing;
@@ -77,10 +78,16 @@ public abstract class Mood {
         if (st == null) {
             return null;
         }
+        //avoid just doing nothing after rally has died.
+        MapLocation rally = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
+        if (rally != null && me!=null&& radC.read("MEDBAY_REQUEST", Clock.getRoundNum())==1 && me.equals(rally)) {
+            return new Weeoo((Soldier)u);
+        }
+        
         int supply_need = radC.read("SUPPLY_REQUEST_OFFSET", Clock.getRoundNum());
         boolean needSupply = supply_need == 1;
 
-        if (needSupply && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 5) {
+        if (st != StratType.SOS && needSupply && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 5) {
             return new Helpful((Soldier) u);
         }
         if (cd > 0) {
@@ -150,6 +157,12 @@ public abstract class Mood {
      * @throws Exception
      */
     public void moveTowards(MapLocation goal) throws Exception {
+
+        if (rc.senseMine(me) == team.opponent()) {
+            moveish(Const.directions[(dir + 4) % 8]);
+            dir = (dir + 4) % 8;
+            return;
+        }
         rc.setIndicatorString(1, "moveTowards");
         if (goal == null) {
             return;
@@ -161,12 +174,11 @@ public abstract class Mood {
             bug = false;
             mining = false;
             closest = Integer.MAX_VALUE;
-            // return;
         }
 
         int disToGoal = me.distanceSquaredTo(goal);
         Direction dirToGoal = me.directionTo(goal);
-        if (mining && (Const.locOnLine(start, end, me) && disToGoal < closest)) {
+        if (mining && (Const.locOnLine(start, end, me) && disToGoal < closest && !Const.isObstacle(rc, me.directionTo(goal)))) { // 
             mining = false;
         }
         if (disToGoal == 0) {
@@ -218,6 +230,7 @@ public abstract class Mood {
             if (mine != null && mine != rc.getTeam()) {
                 if (rc.isActive()) {
                     rc.defuseMine(min);
+                    return;
                 }
                 return;
             } else if (!Const.isObstacle(rc, min)) {
@@ -225,6 +238,7 @@ public abstract class Mood {
                 return;
             }
         }
+        
         if (!bug) { //the initial transition. 2Spooky4me.
             //the initial move is important.
             MapLocation t_clos = null;
@@ -238,12 +252,12 @@ public abstract class Mood {
                 }
             }
             if (t_clos == null) {
+                simpleMove(goal);
                 return;
             }
             move(me.directionTo(t_clos));
             onRight = getOnRight(goal);
             bug = true;
-            //rc.setIndicatorString(1, "initial transition");
             return;
         }
         MapLocation nextMove = trace(onRight);
@@ -257,10 +271,11 @@ public abstract class Mood {
             } else {
                 //failure entirely. This should only happen with changing maps.
                 //We'll restart bugging from the start.
-                start = null;
-                moveTowards(goal);
+                
+                return;
             }
         }
+        simpleMove(goal);
     }
 
     public int getDir(MapLocation me, MapLocation start, MapLocation goal) throws IllegalStateException {

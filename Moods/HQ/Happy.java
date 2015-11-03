@@ -41,7 +41,10 @@ public class Happy extends Mood {
     public void act() throws Exception {
         StratType mahStrat = ((HQ) u).sc.hqStrat;
         if (rc.isActive()) {
-
+            if (mahStrat == StratType.RUSH_REACTOR) {
+                rc.researchUpgrade(Upgrade.FUSION);
+                return;
+            }
             if (mahStrat == StratType.RUSH_DEFUSION) {
                 rc.researchUpgrade(Upgrade.DEFUSION);
                 return;
