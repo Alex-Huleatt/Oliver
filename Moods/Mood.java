@@ -90,7 +90,7 @@ public abstract class Mood {
             --cd;
             return null;
         }
-        if (st != lastStrat) {
+        if (st != lastStrat && st != null) {
             lastStrat = st;
             Mood newMood = null;
             switch (st) {
@@ -109,7 +109,7 @@ public abstract class Mood {
             return newMood;
         }
 
-        return null;
+        return new Rushing((Soldier)u);
     }
 
     public void getNearbyRobots(int disSquared) {
@@ -159,7 +159,7 @@ public abstract class Mood {
             dir = (dir + 4) % 8;
             return;
         }
-        rc.setIndicatorString(1, "moveTowards");
+        rc.setIndicatorString(1, "moveTowards " + goal);
         if (goal == null) {
             return;
         }

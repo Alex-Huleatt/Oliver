@@ -34,6 +34,7 @@ public class Rushing extends Mood {
         boolean regroup_flag = radC.read("REGROUP_FLAG", Clock.getRoundNum())==1;
         if (regroup_flag) {
             MapLocation rally = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
+            rc.setIndicatorString(2, "Rallying");
             moveTowards(rally);
             return;
         }
