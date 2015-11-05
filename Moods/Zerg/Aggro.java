@@ -32,7 +32,7 @@ public class Aggro extends Mood {
         if (enemies.length == 0) {
             return new Rushing((Soldier) u);
         }
-        if (rc.getEnergon() < 15 && (allies.length < 4 || enemies.length > allies.length)) {
+        if (rc.getEnergon() < 20) { // && (allies.length < 4 || enemies.length > allies.length)
             return new Hurt((Soldier) u);
         }
 

@@ -91,13 +91,13 @@ public class Helpful extends Mood {
             findGoal();
             return;
         }
-        if (me.distanceSquaredTo(goal) < 5) {
+        if (me.distanceSquaredTo(goal) < 7) {
             close_time++;
         } else {
             close_time = 0;
         }
 
-        if (close_time > 5 || goal.distanceSquaredTo(rc.senseHQLocation()) <= 4) {
+        if (close_time > 3 || goal.distanceSquaredTo(rc.senseHQLocation()) <= 4) {
             goal = null;
             radC.write("SUPPLY_REQUEST_NEW_POSN", 1, Clock.getRoundNum());
         }
