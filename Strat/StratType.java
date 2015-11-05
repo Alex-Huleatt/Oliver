@@ -10,6 +10,6 @@ package team016.Strat;
  * @author alexhuleatt
  */
 public enum StratType {
-    NO_STRAT,ZERG,SOS,NUKE,ALL_IN,RUSH_DEFUSION,RUSH_REACTOR
+    NO_STRAT,ZERG,SOS,NUKE,ALL_IN,RUSH_DEFUSION,RUSH_REACTOR,RUSH_VISION
     
 }

@@ -60,7 +60,7 @@ public class StratController {
     //this line is going to be long.
     public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke,
             shouldDefuse, shouldReactor, shouldVision, needSupply, 
-            needNewSupplyLoc, bigMap, sufficientUnits;
+            needNewSupplyLoc, bigMap, sufficientUnits, lotOfUnits;
     
     public StratController(RobotController rct) throws Exception {
         this.rc = rct;
@@ -151,11 +151,18 @@ public class StratController {
                 return rc.senseNearbyGameObjects(Robot.class, 
                         100000, 
                         rc.getTeam())
-                        .length-rc.senseAlliedEncampmentSquares().length > 5;
+                        .length-rc.senseAlliedEncampmentSquares().length > 10;
             }
             
         };
-        
+        lotOfUnits = new Datum() {
+                        public boolean on() throws Exception {
+                return rc.senseNearbyGameObjects(Robot.class, 
+                        100000, 
+                        rc.getTeam())
+                        .length-rc.senseAlliedEncampmentSquares().length > 30;
+            }
+        };
         
         radC = new RadioController(rc);
         me = rc.senseHQLocation();
@@ -202,11 +209,14 @@ public class StratController {
         {
             if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
                 toStrat = StratType.RUSH_DEFUSION;
-            }
-
-            if (shouldReactor.on() && !spookedHQ.on()) {
+            } else if (shouldReactor.on() && !spookedHQ.on()) {
                 toStrat = StratType.RUSH_REACTOR;
+            } else if (lotOfUnits.on() && !spookedHQ.on() && !needSupply.on()) {
+                toStrat = StratType.NUKE;
             }
+            // else if (lotOfUnits.on() && !spookedHQ.on() && !rc.hasUpgrade(Upgrade.VISION) && !needSupply.on()) {
+            //    toStrat = StratType.RUSH_VISION;
+            //}
         }
         hqStrat = toStrat;
 
@@ -317,7 +327,6 @@ public class StratController {
                 curTarget = rc.senseEnemyHQLocation();
             }        
         }
-        
         curTarget = temp;
     }
 
