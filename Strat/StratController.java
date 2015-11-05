@@ -234,9 +234,7 @@ public class StratController {
                 }
             }
         }
-        System.out.println("1.");
         if (curTarget != null && rc.canSenseSquare(curTarget)) {
-            System.out.println("2.");
             GameObject o = rc.senseObjectAtLocation(curTarget);
             if (o != null) {
                 if (o instanceof Robot) {
@@ -282,6 +280,7 @@ public class StratController {
         radC.write(
                 "RALLY_OFFSET", Const.locToInt(rally), Clock.getRoundNum());
         //System.out.println(Const.intToLoc(sqr));
+        markTalkers();
     }
 
     /**
@@ -367,6 +366,19 @@ public class StratController {
         }
 
         //most likely encampments are near enemy base.
+    }
+
+    private void markTalkers() throws Exception {
+        int meds = radC.read("MEDBAY_COUNT", Clock.getRoundNum() - 1);
+        int gens = radC.read("GEN_COUNT_OFFSET", Clock.getRoundNum() - 1);
+        int supply = radC.read("SUPPLY_COUNT_OFFSET", Clock.getRoundNum() - 1);
+        int talkers = (meds > 0) ? meds : 0;
+        talkers += (gens > 0) ? gens : 0;
+        talkers += (supply > 0) ? supply : 0;
+
+        //System.out.println("FOUND " + talkers + " TALKERS");
+        radC.write("TOTAL_CHATTERS", talkers, Clock.getRoundNum());
+        radC.write("CHAT_INDEX", 0, Clock.getRoundNum());
     }
 
 }

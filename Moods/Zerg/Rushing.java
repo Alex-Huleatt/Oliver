@@ -32,7 +32,6 @@ public class Rushing extends Mood {
     @Override
     public void act() throws Exception {
         boolean regroup_flag = radC.read("REGROUP_FLAG", Clock.getRoundNum())==1;
-        System.out.println(regroup_flag);
         if (regroup_flag) {
             MapLocation rally = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
             moveTowards(rally);

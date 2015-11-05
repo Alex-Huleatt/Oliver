@@ -24,15 +24,11 @@ public class RadioController {
 
     RobotController rc;
 
-    
-    
-
-
     public RadioController(RobotController rc) {
         this.rc = rc;
     }
 
-    private static int getMask(int round_num, int block) {
+    public static int getMask(int round_num, int block) {
         return ((int) xorshiftstar(round_num + block+1)) << 24;
     }
 
