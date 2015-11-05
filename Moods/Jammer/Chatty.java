@@ -11,13 +11,10 @@ import battlecode.common.Clock;
  * @author MacKenzie O'Bleness
  */
 public class Chatty extends Mood {
-
-    int[] oldMasks;
     int[] newMasks;
 
     public Chatty(Unit u) {
         super(u);
-        oldMasks = new int[Consts.values().length];
         newMasks = new int[Consts.values().length];
     }
 
@@ -32,15 +29,14 @@ public class Chatty extends Mood {
             chat(chan);
             chan = (chan + 1) % 65535;
         }
-
     }
 
     private void chat(int chan) throws Exception{
         int message = rc.readBroadcast(chan);
         if (message == 0 || message == Integer.MAX_VALUE) return;
-        if (isOurs(newMasks, message) || isOurs(oldMasks, message)) return;
+        if (isOurs(newMasks, message)) return;
 
-        System.out.println("I overrote dat channel!");
+        // System.out.println("I overrote dat channel!");
         rc.broadcast(chan, Integer.MAX_VALUE);
     }
 
@@ -52,8 +48,6 @@ public class Chatty extends Mood {
     }
 
     private void updateMasks() throws Exception {
-        System.arraycopy(newMasks, 0, oldMasks, 0, oldMasks.length);
-        newMasks = new int[Consts.values().length];
         for (int i = 0; i < Consts.values().length; i++) {
             newMasks[i] = RadioController.getMask(Clock.getRoundNum(), i);
         }
