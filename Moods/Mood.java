@@ -75,9 +75,6 @@ public abstract class Mood {
 
     public Mood swing() throws Exception {
         StratType st = radC.curStrat(Clock.getRoundNum());
-        if (st == null) {
-            return null;
-        }
         //avoid just doing nothing after rally has died.
         MapLocation rally = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
         if (rally != null && me!=null&& radC.read("MEDBAY_REQUEST", Clock.getRoundNum())==1 && me.equals(rally)) {
@@ -90,7 +87,7 @@ public abstract class Mood {
         if (st != StratType.SOS && needSupply && rc.getLocation().distanceSquaredTo(rc.senseHQLocation()) < 5) {
             return new Helpful((Soldier) u);
         }
-        if (cd > 0) {
+        if (cd > 0 && st != StratType.SOS) {
             --cd;
             return null;
         }
@@ -271,7 +268,8 @@ public abstract class Mood {
             } else {
                 //failure entirely. This should only happen with changing maps.
                 //We'll restart bugging from the start.
-                
+                start=null;
+                moveTowards(goal);
                 return;
             }
         }
