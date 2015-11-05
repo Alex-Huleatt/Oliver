@@ -20,6 +20,7 @@ import team016.Comm.RadioController;
 import team016.Const;
 import team016.Consts;
 import team016.MapQueue;
+import team016.Pair;
 import team016.Timer;
 
 /**
@@ -200,6 +201,10 @@ public class StratController {
     }
 
     private void sendStrat(StratType st) throws Exception {
+        if (rc.getTeam()==Team.B) {
+            Pair<Integer,Integer> p = Consts.c("GLOBAL_STRAT");
+            
+        }
         radC.write("GLOBAL_STRAT", st.ordinal(), Clock.getRoundNum());
     }
 
@@ -389,7 +394,7 @@ public class StratController {
         int count = 0;
         for (MapLocation m : neuts) {
             int dis = m.distanceSquaredTo(midpoint);
-            if (dis < min_dis) {
+            if (dis < min_dis && m.distanceSquaredTo(me) > 8) {
                 min_dis = dis;
                 minPoint = m;
             }

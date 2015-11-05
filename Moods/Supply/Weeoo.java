@@ -81,7 +81,7 @@ public class Weeoo extends Mood {
         } else {
             if (rc.senseEncampmentSquare(goal)) {
                 encamping = true;
-                rc.captureEncampment(RobotType.MEDBAY);
+                if (rc.isActive()) rc.captureEncampment(RobotType.MEDBAY);
             } else {
                 goal = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
             }

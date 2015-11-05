@@ -79,7 +79,9 @@ public class RadioController {
      */
     public StratType curStrat(int round_num) throws Exception {
         final Pair<Integer,Integer> p = Consts.c("GLOBAL_STRAT");
+        
         int strat_index = read(p.a, p.b, round_num);
+        
         if (strat_index <= 0 || strat_index > StratType.values().length) {
             return null;
         }

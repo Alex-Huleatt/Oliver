@@ -83,5 +83,5 @@ public class Chatty extends Mood {
 
 
     @Override
-    public String toString() {return "T:  (?°?°??? ???";}
+    public String toString() {return "T:  ";}
 }
