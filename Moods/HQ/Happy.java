@@ -43,14 +43,22 @@ public class Happy extends Mood {
         if (rc.isActive()) {
             if (mahStrat == StratType.RUSH_REACTOR) {
                 rc.researchUpgrade(Upgrade.FUSION);
-                return;
+                //return;
             }
             if (mahStrat == StratType.RUSH_DEFUSION) {
                 rc.researchUpgrade(Upgrade.DEFUSION);
-                return;
+                //return;
+            }
+            if (mahStrat == StratType.NUKE) {
+                rc.researchUpgrade(Upgrade.NUKE);
+                //return;
+            }
+            if (mahStrat == StratType.RUSH_VISION) {
+                rc.researchUpgrade(Upgrade.VISION);
+                //return;
             }
 
-            if (rc.getTeamPower()>100) {
+            if (rc.getTeamPower() > 100 && rc.isActive()) {
                 // Spawn a soldier
                 for (int i = 0; i < 8; i++) {
                     Direction dir = Const.directions[i];
