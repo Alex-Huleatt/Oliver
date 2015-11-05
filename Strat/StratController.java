@@ -232,7 +232,6 @@ public class StratController {
         supplyLogic();
         medbayLogic();
         targetLogic();
-        markTalkers();
 
         radC.write(
                 "RALLY_OFFSET", Const.locToInt(rally), Clock.getRoundNum());
@@ -415,19 +414,6 @@ public class StratController {
         for (MapLocation m : neutrals) {
             enemyEncamps.add(m, me.distanceSquaredTo(m));
         }
-    }
-
-    private void markTalkers() throws Exception {
-        int meds = radC.read("MEDBAY_COUNT", Clock.getRoundNum() - 1);
-        int gens = radC.read("GEN_COUNT_OFFSET", Clock.getRoundNum() - 1);
-        int supply = radC.read("SUPPLY_COUNT_OFFSET", Clock.getRoundNum() - 1);
-        int talkers = (meds > 0) ? meds : 0;
-        talkers += (gens > 0) ? gens : 0;
-        talkers += (supply > 0) ? supply : 0;
-
-        //System.out.println("FOUND " + talkers + " TALKERS");
-        radC.write("TOTAL_CHATTERS", talkers, Clock.getRoundNum());
-        radC.write("CHAT_INDEX", 0, Clock.getRoundNum());
     }
 
 }

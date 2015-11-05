@@ -57,10 +57,7 @@ public enum Consts {
         
         SOLDIER_IDEA_OFFSET(SOLDIER_BLOCK,0),
         SOLDIER_POSN_OFFSET(SOLDIER_BLOCK,1),
-        SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,2),
-
-        TOTAL_CHATTERS(CHAT_BLOCK, 0),
-        CHAT_INDEX(CHAT_BLOCK, 1);
+        SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,2);
         
         
         public Consts c;
