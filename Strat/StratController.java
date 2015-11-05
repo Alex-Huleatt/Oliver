@@ -226,6 +226,7 @@ public class StratController {
         supplyLogic();
         medbayLogic();
         targetLogic();
+        markTalkers();
 
         radC.write(
                 "RALLY_OFFSET", Const.locToInt(rally), Clock.getRoundNum());

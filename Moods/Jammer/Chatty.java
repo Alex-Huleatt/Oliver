@@ -32,7 +32,7 @@ public class Chatty extends Mood {
         getChatRoom();
 
         int chan = startChan;
-        while(Clock.getBytecodeNum() < 5000 && chan <= chatSize+startChan) {
+        while(Clock.getBytecodeNum() < 5000 && chan <= chatSize+startChan && chan < 65535) {
             chat(chan);
         }
     }
@@ -69,16 +69,16 @@ public class Chatty extends Mood {
         int index = radC.read("CHAT_INDEX",  Clock.getRoundNum());
         startChan = index * chatSize;
 
-        //System.out.println("Index: " + index);
+        // System.out.println("Index: " + index);
 
         radC.write("CHAT_INDEX", index+1, Clock.getRoundNum());
 
-        // TODO: this shouldn't be nessicary, but it is
+        // TODO: this shouldn't be necessary, but it is
         if (chatSize + startChan > 65534) {
             chatSize = 0;
             startChan = 0;
         }
-        //System.out.println("Covering " + chatSize + " channels starting at " + startChan);
+        // System.out.println("Covering " + chatSize + " channels starting at " + startChan);
     }
 
 
