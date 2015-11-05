@@ -161,7 +161,7 @@ public class StratController {
                 return rc.senseNearbyGameObjects(Robot.class, 
                         100000, 
                         rc.getTeam())
-                        .length-rc.senseAlliedEncampmentSquares().length > 30;
+                        .length-rc.senseAlliedEncampmentSquares().length > 17;
             }
         };
         
@@ -175,6 +175,7 @@ public class StratController {
         targetCD = 0;
         validTarget = false;
         rally = getRally(500);
+        
     }
 
     public void majorStrat() throws Exception {
