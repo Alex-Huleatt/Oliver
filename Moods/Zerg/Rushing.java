@@ -5,10 +5,6 @@ import battlecode.common.MapLocation;
 import team016.Const;
 import team016.Units.Soldier;
 import team016.Moods.Mood;
-import battlecode.common.Robot;
-import battlecode.common.RobotController;
-import battlecode.common.RobotInfo;
-import battlecode.common.RobotType;
 
 public class Rushing extends Mood {
 
@@ -33,6 +29,12 @@ public class Rushing extends Mood {
     public void act() throws Exception {
         boolean regroup_flag = radC.read("REGROUP_FLAG", Clock.getRoundNum())==1;
         if (regroup_flag) {
+            if (radC.read("THREAT_COUNT", Clock.getRoundNum()) > 0) {
+                MapLocation encampment = Const.intToLoc(radC.read("THREAT_LOC", Clock.getRoundNum()));
+                rc.setIndicatorString(2, "Rescuing");
+                moveTowards(encampment);
+                return;
+            }
             MapLocation rally = Const.intToLoc(radC.read("RALLY_OFFSET", Clock.getRoundNum()));
             rc.setIndicatorString(2, "Rallying");
             moveTowards(rally);

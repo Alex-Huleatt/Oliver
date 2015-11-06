@@ -24,7 +24,8 @@ public enum Consts {
     MISSION_BLOCK,
     DEMOCRACY_BLOCK,
     HALP_BLOCK,
-    CHAT_BLOCK;
+    CHAT_BLOCK,
+    SCARED_BLOCK;
     
     public final int v;
     Consts() {
@@ -57,7 +58,10 @@ public enum Consts {
         
         SOLDIER_IDEA_OFFSET(SOLDIER_BLOCK,0),
         SOLDIER_POSN_OFFSET(SOLDIER_BLOCK,1),
-        SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,2);
+        SOLDIER_VOTE_OFFSET(SOLDIER_BLOCK,2),
+
+        THREAT_COUNT(SCARED_BLOCK, 0),
+        THREAT_LOC(SCARED_BLOCK, 1);
         
         
         public Consts c;

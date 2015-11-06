@@ -23,7 +23,7 @@ public class Soldier extends Unit {
     @Override
     public void run() throws Exception {
         Mood trans;
-        Timer t = new Timer();
+        // Timer t = new Timer();
         while (true) {
             if (rc.getTeamPower() > 20) {
                 emotion = ((trans = emotion.swing()) == null) ? emotion : trans;

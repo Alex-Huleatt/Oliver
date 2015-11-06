@@ -232,6 +232,7 @@ public class StratController {
         supplyLogic();
         medbayLogic();
         targetLogic();
+        resetScaredEncampments();
 
         radC.write(
                 "RALLY_OFFSET", Const.locToInt(rally), Clock.getRoundNum());
@@ -377,6 +378,19 @@ public class StratController {
         encamps_index = 0;
     }
 
+    private void resetScaredEncampments() throws Exception {
+        int oldThreat = radC.read("THREAT_COUNT", Clock.getRoundNum()-1);
+        MapLocation oldLoc = Const.intToLoc(radC.read("THREAT_LOC", Clock.getRoundNum()-1));
+
+        if (oldThreat > 0 && unitAtLocation(oldLoc)) {
+            radC.write("THREAT_COUNT", oldThreat, Clock.getRoundNum());
+            radC.write("THREAT_LOC", Const.locToInt(oldLoc), Clock.getRoundNum());
+        } else {
+            radC.write("THREAT_COUNT", 0, Clock.getRoundNum());
+            radC.write("THREAT_LOC", Const.locToInt(rc.senseEnemyHQLocation()), Clock.getRoundNum());
+        }
+    }
+
     private double supplyHeuristic(MapLocation m) {
         return 1.0 * m.distanceSquaredTo(me);// - 0.0 * Math.pow(Const.disToLine(me, rc.senseEnemyHQLocation(), m), 2);
     }
@@ -414,6 +428,13 @@ public class StratController {
         for (MapLocation m : neutrals) {
             enemyEncamps.add(m, me.distanceSquaredTo(m));
         }
+    }
+
+    private boolean unitAtLocation(MapLocation loc) throws Exception {
+        if (!rc.canSenseSquare(loc)) return false;
+        GameObject obj = rc.senseObjectAtLocation(loc);
+        if (obj != null && obj.getTeam() == rc.getTeam()) return true;
+        return false;
     }
 
 }
