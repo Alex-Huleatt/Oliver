@@ -21,6 +21,7 @@ public class Spooked extends Mood {
 
     public Spooked(Soldier s) {
         super(s);
+        cd = 35;
     }
     
     @Override

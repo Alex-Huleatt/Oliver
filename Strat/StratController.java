@@ -60,9 +60,10 @@ public class StratController {
 
     //this line is going to be long.
     public Datum closeHQs, midGame, lateGame, spookedHQ, earlyGame, enemyNuke,
-            shouldDefuse, shouldReactor, shouldVision, needSupply, 
-            needNewSupplyLoc, bigMap, sufficientUnits, lotOfUnits;
-    
+            shouldDefuse, shouldReactor, shouldVision, needSupply,
+            needNewSupplyLoc, bigMap, sufficientUnits, lotOfUnits, shouldNuke,
+            needNuke;
+
     public StratController(RobotController rct) throws Exception {
         this.rc = rct;
         this.curStrat = StratType.NO_STRAT;
@@ -149,22 +150,45 @@ public class StratController {
         sufficientUnits = new Datum() {
 
             public boolean on() throws Exception {
-                return rc.senseNearbyGameObjects(Robot.class, 
-                        100000, 
-                        rc.getTeam())
-                        .length-rc.senseAlliedEncampmentSquares().length > 10;
+                int num_needed;
+                int c = Clock.getRoundNum();
+                if (c < 300) {
+                    num_needed = 7;
+                } else if (c < 800) {
+                    num_needed = 12;
+                } else if (c < 1200) {
+                    num_needed = 15;
+                } else {
+                    num_needed = 17;
+                }
+                return rc.senseNearbyGameObjects(Robot.class,
+                        100000,
+                        rc.getTeam()).length - rc.senseAlliedEncampmentSquares().length > num_needed;
             }
-            
+
         };
         lotOfUnits = new Datum() {
-                        public boolean on() throws Exception {
-                return rc.senseNearbyGameObjects(Robot.class, 
-                        100000, 
-                        rc.getTeam())
-                        .length-rc.senseAlliedEncampmentSquares().length > 17;
+            public boolean on() throws Exception {
+                return rc.senseNearbyGameObjects(Robot.class,
+                        100000,
+                        rc.getTeam()).length - rc.senseAlliedEncampmentSquares().length > 28;
             }
         };
-        
+        shouldNuke = new Datum() {
+
+            public boolean on() throws Exception {
+                return rc.checkResearchProgress(Upgrade.NUKE) > 350 || lotOfUnits.on();
+            }
+
+        };
+        needNuke = new Datum() {
+
+            public boolean on() throws Exception {
+                return (Clock.getRoundNum() > 1300 && sufficientUnits.on()) || rc.checkResearchProgress(Upgrade.NUKE) > 375;
+            }
+
+        };
+
         radC = new RadioController(rc);
         me = rc.senseHQLocation();
         allEncamps = rc.senseEncampmentSquares(me, search_range, Team.NEUTRAL);
@@ -175,7 +199,7 @@ public class StratController {
         targetCD = 0;
         validTarget = false;
         rally = getRally(500);
-        
+
     }
 
     public void majorStrat() throws Exception {
@@ -202,9 +226,9 @@ public class StratController {
     }
 
     private void sendStrat(StratType st) throws Exception {
-        if (rc.getTeam()==Team.B) {
-            Pair<Integer,Integer> p = Consts.c("GLOBAL_STRAT");
-            
+        if (rc.getTeam() == Team.B) {
+            Pair<Integer, Integer> p = Consts.c("GLOBAL_STRAT");
+
         }
         radC.write("GLOBAL_STRAT", st.ordinal(), Clock.getRoundNum());
     }
@@ -212,6 +236,10 @@ public class StratController {
     public void setHQStrat() throws Exception {
         StratType toStrat = StratType.NO_STRAT;
         //lbl:
+        if (needNuke.on()) {
+            hqStrat = StratType.NUKE;
+            return;
+        }
         {
             if (shouldDefuse.on() && !spookedHQ.on() && earlyGame.on()) {
                 toStrat = StratType.RUSH_DEFUSION;
@@ -248,7 +276,7 @@ public class StratController {
                     Const.locToInt(sup),
                     Clock.getRoundNum());
         }
-        if (needSupply.on() && sufficientUnits.on()) {
+        if (needSupply.on()) {
             if (sup != null) {
                 radC.write("SUPPLY_REQUEST_OFFSET",
                         1,
@@ -262,7 +290,7 @@ public class StratController {
 
     public void medbayLogic() throws Exception {
         //do medbay logic here
-        if (radC.read("MEDBAY_COUNT", Clock.getRoundNum() - 1) < 1 && bigMap.on() && sufficientUnits.on()) {
+        if (radC.read("MEDBAY_COUNT", Clock.getRoundNum() - 1) < 1 && bigMap.on()) {
             radC.write("MEDBAY_REQUEST", 1, Clock.getRoundNum());
         }
         if (rc.canSenseSquare(rally)) {
@@ -277,61 +305,76 @@ public class StratController {
     }
 
     public void targetLogic() throws Exception {
-        if (Clock.getRoundNum()<100 || !sufficientUnits.on()) {
-            radC.write("REGROUP_FLAG", 1, Clock.getRoundNum());
-        }
-        if (this_target > 200) {
-            setTarget();
-        }
-        //check if target has been destroyed
-        if (curTarget != null && rc.canSenseSquare(curTarget)) {
-            GameObject o = rc.senseObjectAtLocation(curTarget);
-            if (o != null) {
-                if (o instanceof Robot) {
-                    RobotInfo ri = rc.senseRobotInfo((Robot) o);
-                    if (ri.team == rc.getTeam()) {
-                        setTarget();
-                        if (validTarget) {
-                            targetCD = 17;
-                            validTarget = false;
+        if (enemyNuke.on()) {
+            curTarget = rc.senseEnemyHQLocation();
+
+        } else {
+            if ((Clock.getRoundNum() < 100 || !sufficientUnits.on() || needNuke.on())) {
+                radC.write("REGROUP_FLAG", 1, Clock.getRoundNum());
+
+            }
+            if (this_target > 200) {
+                setTarget();
+                targetCD = 100;
+                validTarget = false;
+            }
+            //check if target has been destroyed
+            if (curTarget != null && rc.canSenseSquare(curTarget)) {
+                GameObject o = rc.senseObjectAtLocation(curTarget);
+                if (o != null) {
+                    if (o instanceof Robot) {
+                        RobotInfo ri = rc.senseRobotInfo((Robot) o);
+                        if (ri.team == rc.getTeam()) {
+                            setTarget();
+                            if (validTarget) {
+                                targetCD = 75;
+                                validTarget = false;
+                            }
+                        } else {
+                            validTarget = true;
                         }
-                    } else {
-                        validTarget = true;
+                    }
+                } else {
+                    if (validTarget) {
+                        targetCD = 75;
+                        validTarget = false;
                     }
                 }
+            }
+            //if regrouping
+            if (targetCD > 0) {
+                --targetCD;
+                radC.write("REGROUP_FLAG", 1, Clock.getRoundNum());
             } else {
-                if (validTarget) {
-                    targetCD = 17;
-                    validTarget = false;
+                if (lateGame.on() || enemyNuke.on()) {
+                    curTarget = rc.senseEnemyHQLocation();
+                } else {
+                    if (curTarget == null) {
+                        setTarget();
+                    }
                 }
             }
+            ++this_target;
         }
-        //if regrouping
-        if (targetCD > 0) {
-            --targetCD;
-            radC.write("REGROUP_FLAG", 1, Clock.getRoundNum());
-        } else {
-            if (lateGame.on() || enemyNuke.on()) {
-                curTarget = rc.senseEnemyHQLocation();
-            } else {
-                if (curTarget==null) setTarget();
-            }
-        }
-        ++this_target;
         radC.write(
                 "TARGET_OFFSET", Const.locToInt(curTarget), Clock.getRoundNum());
     }
-    
+
     public void setTarget() throws Exception {
+        if (enemyNuke.on()) {
+            curTarget = rc.senseEnemyHQLocation();
+            return;
+        }
         MapLocation temp;
         temp = enemyEncamps.pop();
         this_target = 0;
+
         if (temp == null) {
             findEnemyEncamps();
             temp = enemyEncamps.pop();
             if (temp == null) {
                 curTarget = rc.senseEnemyHQLocation();
-            }        
+            }
         }
         curTarget = temp;
     }
