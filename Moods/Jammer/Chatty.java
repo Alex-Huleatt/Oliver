@@ -66,9 +66,13 @@ public class Chatty extends Mood {
         MapLocation me = rc.getLocation();
         if (enemies == 0) {
             if (!scared) return;
+            rc.setIndicatorString(2, "FINE");
             scared = false;
-            if (Const.intToLoc(radC.read("THREAT_LOC", Clock.getRoundNum())) == me) {
+            if (Const.intToLoc(radC.read("THREAT_LOC", Clock.getRoundNum())).equals(me)) {
+                rc.setIndicatorString(1, "SAID FINE");
                 radC.write("THREAT_COUNT", 0, Clock.getRoundNum());
+                int rally = radC.read("RALLY_OFFSET", Clock.getRoundNum());
+                radC.write("THREAT_LOC", rally, Clock.getRoundNum());
             }
             return;
         }
@@ -79,7 +83,7 @@ public class Chatty extends Mood {
         if (curIntLoc == -1) return;
         MapLocation curLoc = Const.intToLoc(curIntLoc);
 
-        if (me.distanceSquaredTo(rc.senseHQLocation()) < curLoc.distanceSquaredTo(rc.senseHQLocation()) || enemies/curThreat > 0.5) {
+        if (me.distanceSquaredTo(rc.senseHQLocation()) < curLoc.distanceSquaredTo(rc.senseHQLocation()) || curThreat == 0 || enemies/curThreat > 0.5) {
             radC.write("THREAT_COUNT", enemies, Clock.getRoundNum());
             radC.write("THREAT_LOC", Const.locToInt(me), Clock.getRoundNum());
             rc.setIndicatorString(2, "DISTRESSED");

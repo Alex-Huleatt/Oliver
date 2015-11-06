@@ -430,7 +430,7 @@ public class StratController {
             radC.write("THREAT_LOC", Const.locToInt(oldLoc), Clock.getRoundNum());
         } else {
             radC.write("THREAT_COUNT", 0, Clock.getRoundNum());
-            radC.write("THREAT_LOC", Const.locToInt(rc.senseEnemyHQLocation()), Clock.getRoundNum());
+            radC.write("THREAT_LOC", Const.locToInt(rally), Clock.getRoundNum());
         }
     }
 
